@@ -1,0 +1,1322 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>ORBITAL — Understanding what moves above us</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap"
+        rel="stylesheet"
+    >
+
+    <!-- Main stylesheet -->
+    <link
+        rel="stylesheet"
+        href="./css/style.css"
+    >
+
+    <!-- Three.js -->
+    <script
+        src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"
+    ></script>
+</head>
+
+
+<body>
+
+    <!-- Background grain -->
+    <div class="grain"></div>
+
+
+    <!-- =========================================================
+         NAVBAR
+    ========================================================== -->
+
+    <header id="header">
+
+        <div class="brand">
+            <span class="mark">✦</span>
+            ORBITAL
+        </div>
+
+
+        <nav class="links">
+
+            <a
+                href="#home"
+                class="active"
+            >
+                Home
+            </a>
+
+            <a href="#explore">
+                Explore
+            </a>
+
+            <a href="#monitor">
+                Monitor
+            </a>
+
+            <a href="#analytics">
+                Analytics
+            </a>
+
+        </nav>
+
+
+        <div class="nav-right">
+
+            <!-- Notifications -->
+            <button
+                class="icon-btn"
+                aria-label="Notifications"
+                type="button"
+            >
+
+                <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.6"
+                >
+                    <path
+                        d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"
+                    />
+
+                    <path
+                        d="M13.7 21a2 2 0 0 1-3.4 0"
+                    />
+                </svg>
+
+            </button>
+
+
+            <!-- User avatar -->
+            <div
+                class="avatar"
+                id="nav-avatar"
+            >
+                ?
+            </div>
+
+        </div>
+
+    </header>
+
+
+
+    <!-- =========================================================
+         MAIN
+    ========================================================== -->
+
+    <main>
+
+
+        <!-- =====================================================
+             HERO
+        ====================================================== -->
+
+        <section
+            class="hero"
+            id="home"
+        >
+
+            <!-- Three.js canvas -->
+            <canvas id="earth-canvas"></canvas>
+
+
+            <!-- Dark overlay -->
+            <div class="hero-vignette"></div>
+
+
+            <!-- Satellite information popup -->
+            <div
+                id="hero-popover"
+                class="hero-popover"
+            >
+
+                <div class="hp-name">
+                    —
+                </div>
+
+                <div class="hp-row">
+                    <span>Altitude</span>
+                    <span>—</span>
+                </div>
+
+                <div class="hp-row">
+                    <span>Velocity</span>
+                    <span>—</span>
+                </div>
+
+                <div class="hp-row">
+                    <span>Status</span>
+                    <span>—</span>
+                </div>
+
+            </div>
+
+
+            <!-- Hero content -->
+            <div class="hero-content">
+
+                <div class="eyebrow">
+
+                    <span class="dot"></span>
+
+                    Live orbital feed · 12,482 objects tracked
+
+                </div>
+
+
+                <h1 class="headline">
+
+                    Understanding what
+                    <br>
+
+                    <span class="thin">
+                        moves above us.
+                    </span>
+
+                </h1>
+
+
+                <p class="subhead">
+
+                    ORBITAL turns real orbital data into a clear,
+                    living view of satellites, debris and orbital
+                    activity — and the moments they pass close
+                    to one another.
+
+                </p>
+
+
+                <div class="cta-row">
+
+                    <!-- Opens authentication modal -->
+                    <button
+                        type="button"
+                        class="btn-primary"
+                        id="hero-signup-trigger"
+                    >
+
+                        Get Started
+
+                        <svg
+                            width="14"
+                            height="14"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                        >
+                            <path d="M5 12h14" />
+                            <path d="M13 5l7 7-7 7" />
+                        </svg>
+
+                    </button>
+
+
+                    <a
+                        href="#how"
+                        class="btn-ghost"
+                    >
+                        How it works
+                    </a>
+
+                </div>
+
+            </div>
+
+
+            <!-- Scroll indicator -->
+            <div class="scroll-cue">
+
+                <span>
+                    Scroll
+                </span>
+
+                <span class="line"></span>
+
+            </div>
+
+        </section>
+
+
+
+        <!-- =====================================================
+             STATS
+        ====================================================== -->
+
+        <section class="stats">
+
+            <div class="stat">
+
+                <div class="num">
+                    12,482
+                </div>
+
+                <div class="label">
+                    Objects tracked
+                </div>
+
+            </div>
+
+
+            <div class="stat">
+
+                <div class="num">
+                    8,421
+                </div>
+
+                <div class="label">
+                    Debris
+                </div>
+
+            </div>
+
+
+            <div class="stat">
+
+                <div class="num">
+                    34
+                </div>
+
+                <div class="label">
+                    Close approaches
+                </div>
+
+            </div>
+
+
+            <div class="stat">
+
+                <div class="num">
+                    3
+                </div>
+
+                <div class="label">
+                    Orbital regions
+                </div>
+
+            </div>
+
+        </section>
+
+
+
+        <!-- =====================================================
+             WHAT WE TRACK
+        ====================================================== -->
+
+        <section id="what-we-track">
+
+            <div
+                class="section-inner"
+                style="padding-top:0;"
+            >
+
+                <div class="section-head">
+
+                    <div class="eyebrow">
+                        What we track
+                    </div>
+
+                    <h2>
+                        Three categories.
+                        One crowded neighborhood.
+                    </h2>
+
+                    <p>
+                        Every tracked object falls into one
+                        of three groups — each behaving,
+                        and mattering, differently.
+                    </p>
+
+                </div>
+
+
+                <div class="track-grid">
+
+
+                    <!-- Satellites -->
+
+                    <div class="track-card">
+
+                        <svg
+                            class="track-icon"
+                            viewBox="0 0 40 40"
+                            fill="none"
+                        >
+
+                            <circle
+                                cx="20"
+                                cy="20"
+                                r="15"
+                                stroke="var(--accent-line)"
+                                stroke-width="1"
+                            />
+
+                            <circle
+                                cx="20"
+                                cy="20"
+                                r="3.2"
+                                fill="var(--accent)"
+                            />
+
+                            <circle
+                                cx="32"
+                                cy="20"
+                                r="2"
+                                fill="var(--text-1)"
+                            />
+
+                        </svg>
+
+
+                        <h3>
+                            Satellites
+                        </h3>
+
+
+                        <p>
+                            Active spacecraft currently in orbit —
+                            from communications constellations
+                            to scientific platforms.
+                        </p>
+
+                    </div>
+
+
+
+                    <!-- Space debris -->
+
+                    <div class="track-card">
+
+                        <svg
+                            class="track-icon"
+                            viewBox="0 0 40 40"
+                            fill="none"
+                        >
+
+                            <circle
+                                cx="20"
+                                cy="20"
+                                r="15"
+                                stroke="var(--hairline-strong)"
+                                stroke-width="1"
+                                stroke-dasharray="1.5 3"
+                            />
+
+                            <circle
+                                cx="14"
+                                cy="12"
+                                r="1.4"
+                                fill="var(--text-2)"
+                            />
+
+                            <circle
+                                cx="27"
+                                cy="9"
+                                r="1"
+                                fill="var(--text-2)"
+                            />
+
+                            <circle
+                                cx="30"
+                                cy="24"
+                                r="1.6"
+                                fill="var(--text-2)"
+                            />
+
+                            <circle
+                                cx="10"
+                                cy="27"
+                                r="1"
+                                fill="var(--text-2)"
+                            />
+
+                        </svg>
+
+
+                        <h3>
+                            Space Debris
+                        </h3>
+
+
+                        <p>
+                            Inactive spacecraft, fragments and
+                            remnants left behind — the largest
+                            and least predictable share of the
+                            environment.
+                        </p>
+
+                    </div>
+
+
+
+                    <!-- Close approaches -->
+
+                    <div class="track-card">
+
+                        <svg
+                            class="track-icon"
+                            viewBox="0 0 40 40"
+                            fill="none"
+                        >
+
+                            <circle
+                                cx="13"
+                                cy="27"
+                                r="2.4"
+                                fill="var(--attention)"
+                            />
+
+                            <circle
+                                cx="27"
+                                cy="13"
+                                r="2.4"
+                                fill="var(--text-1)"
+                            />
+
+                            <line
+                                x1="13"
+                                y1="27"
+                                x2="27"
+                                y2="13"
+                                stroke="var(--attention)"
+                                stroke-width="1"
+                                stroke-dasharray="2 2"
+                            />
+
+                        </svg>
+
+
+                        <h3>
+                            Close Approaches
+                        </h3>
+
+
+                        <p>
+                            Objects predicted to pass within a
+                            defined proximity threshold — screened
+                            continuously, not just observed after
+                            the fact.
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+
+        <!-- =====================================================
+             HOW IT WORKS
+        ====================================================== -->
+
+        <section id="how">
+
+            <div class="section-inner">
+
+                <div class="section-head">
+
+                    <div class="eyebrow">
+                        How it works
+                    </div>
+
+                    <h2>
+                        From raw tracking data
+                        to a picture you can read.
+                    </h2>
+
+                </div>
+
+
+                <div class="flow">
+
+
+                    <div class="flow-step">
+
+                        <div class="fs-label">
+                            Real orbital data
+                        </div>
+
+                        <div class="fs-body">
+
+                            <h4>
+                                Ingest
+                            </h4>
+
+                            <p>
+                                Publicly available tracking data
+                                is pulled in continuously from
+                                orbital data sources.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+
+                    <div class="flow-step">
+
+                        <div class="fs-label">
+                            Data processing
+                        </div>
+
+                        <div class="fs-body">
+
+                            <h4>
+                                Validate & normalize
+                            </h4>
+
+                            <p>
+                                Records are cleaned, deduplicated
+                                and standardized into a consistent
+                                object model.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+
+                    <div class="flow-step">
+
+                        <div class="fs-label">
+                            Orbit propagation
+                        </div>
+
+                        <div class="fs-body">
+
+                            <h4>
+                                Compute positions
+                            </h4>
+
+                            <p>
+                                Each object's trajectory is
+                                propagated forward in time to
+                                estimate where it will be.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+
+                    <div class="flow-step">
+
+                        <div class="fs-label">
+                            Proximity analysis
+                        </div>
+
+                        <div class="fs-body">
+
+                            <h4>
+                                Screen for close approaches
+                            </h4>
+
+                            <p>
+                                Propagated paths are compared
+                                to flag objects predicted to
+                                pass near one another.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+
+                    <div class="flow-step">
+
+                        <div class="fs-label">
+                            Visualization
+                        </div>
+
+                        <div class="fs-body">
+
+                            <h4>
+                                Render the result
+                            </h4>
+
+                            <p>
+                                The processed environment is
+                                rendered back as a live,
+                                explorable 3D view.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+
+        <!-- =====================================================
+             CONTRIBUTORS
+        ====================================================== -->
+
+        <section id="contributors">
+
+            <div
+                class="section-inner"
+                style="padding-top:0;"
+            >
+
+                <div class="section-head">
+
+                    <div class="eyebrow">
+                        Open source
+                    </div>
+
+                    <h2>
+                        Built in the open,
+                        by a small team.
+                    </h2>
+
+                </div>
+
+
+                <div class="contrib-grid">
+
+
+                    <div class="contrib-card">
+
+                        <span class="role-tag">
+                            Frontend & Visualization
+                        </span>
+
+                        <h4>
+                            Interface & 3D systems
+                        </h4>
+
+                        <p>
+                            Design system, orbital visualization
+                            and the interactive Earth scene.
+                        </p>
+
+                    </div>
+
+
+
+                    <div class="contrib-card">
+
+                        <span class="role-tag">
+                            Backend & Infrastructure
+                        </span>
+
+                        <h4>
+                            API & data pipeline
+                        </h4>
+
+                        <p>
+                            Service architecture, ingestion
+                            pipeline and persistence layer.
+                        </p>
+
+                    </div>
+
+
+
+                    <div class="contrib-card">
+
+                        <span class="role-tag">
+                            Orbital Data & Analysis
+                        </span>
+
+                        <h4>
+                            Propagation & screening
+                        </h4>
+
+                        <p>
+                            Orbit propagation, proximity
+                            screening methodology and validation.
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+
+        <!-- =====================================================
+             FINAL CTA
+        ====================================================== -->
+
+        <section class="final-cta">
+
+            <h2>
+
+                The orbit is crowded.
+                <br>
+
+                <span class="muted">
+                    Understand it.
+                </span>
+
+            </h2>
+
+
+            <a
+                href="#what-we-track"
+                class="btn-primary"
+            >
+
+                Explore the Orbit
+
+                <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                >
+                    <path d="M5 12h14" />
+                    <path d="M13 5l7 7-7 7" />
+                </svg>
+
+            </a>
+
+        </section>
+
+    </main>
+
+
+
+    <!-- =========================================================
+         FOOTER
+    ========================================================== -->
+
+    <footer>
+
+        <div class="footer-inner">
+
+
+            <div class="footer-brand">
+
+                <div class="brand">
+
+                    <span class="mark">
+                        ✦
+                    </span>
+
+                    ORBITAL
+
+                </div>
+
+
+                <p>
+                    An open-source space situational awareness
+                    project, built for understanding orbital
+                    congestion.
+                </p>
+
+            </div>
+
+
+            <div class="footer-links">
+
+                <div class="footer-col">
+
+                    <div class="eyebrow">
+                        Project
+                    </div>
+
+                    <a href="#">
+                        Data sources
+                    </a>
+
+                    <a href="#">
+                        GitHub
+                    </a>
+
+                    <a href="#contributors">
+                        Contributors
+                    </a>
+
+                    <a href="#">
+                        About
+                    </a>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </footer>
+
+
+
+    <!-- =========================================================
+         AUTHENTICATION MODAL
+    ========================================================== -->
+
+    <div
+        class="auth-overlay"
+        id="auth-overlay"
+        aria-hidden="true"
+    >
+
+        <div
+            class="auth-panel"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="auth-title"
+        >
+
+
+            <!-- AUTH HEADER -->
+
+            <div class="auth-head">
+
+                <div>
+
+                    <div class="brand">
+
+                        <span class="mark">
+                            ✦
+                        </span>
+
+                        ORBITAL
+
+                    </div>
+
+
+                    <h3 id="auth-title">
+                        Create your account
+                    </h3>
+
+
+                    <p>
+                        Join to save a watchlist
+                        and get close-approach alerts.
+                    </p>
+
+                </div>
+
+
+                <button
+                    type="button"
+                    class="auth-close"
+                    id="auth-close"
+                    aria-label="Close sign-up dialog"
+                >
+
+                    <svg
+                        width="14"
+                        height="14"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                    >
+                        <path d="M18 6L6 18" />
+                        <path d="M6 6l12 12" />
+                    </svg>
+
+                </button>
+
+            </div>
+
+
+
+            <!-- =================================================
+                 AUTH BODY
+            ================================================== -->
+
+            <div id="auth-body">
+
+
+                <!-- SOCIAL LOGIN -->
+
+                <div class="social-row">
+
+
+                    <!-- GOOGLE -->
+
+                    <button
+                        type="button"
+                        class="btn-social"
+                        id="google-auth-btn"
+                    >
+
+                        <svg
+                            width="17"
+                            height="17"
+                            viewBox="0 0 48 48"
+                        >
+
+                            <path
+                                fill="#FFC107"
+                                d="M43.6 20.5H42V20H24v8h11.3C33.9 32.7 29.4 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.6 6.1 29.6 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.2-.1-2.4-.4-3.5z"
+                            />
+
+                            <path
+                                fill="#FF3D00"
+                                d="M6.3 14.7l6.6 4.8C14.6 15.6 18.9 13 24 13c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.6 7.1 29.6 5 24 5c-7.6 0-14.2 4.3-17.7 10.7z"
+                            />
+
+                            <path
+                                fill="#4CAF50"
+                                d="M24 44c5.5 0 10.4-2.1 14.1-5.6l-6.5-5.5C29.6 34.7 26.9 35.6 24 35.6c-5.4 0-9.9-3.6-11.5-8.5l-6.6 5.1C9.7 39.6 16.3 44 24 44z"
+                            />
+
+                            <path
+                                fill="#1976D2"
+                                d="M43.6 20.5H42V20H24v8h11.3c-.9 2.6-2.6 4.8-4.8 6.3l6.5 5.5C40.9 36.6 44 30.9 44 24c0-1.2-.1-2.4-.4-3.5z"
+                            />
+
+                        </svg>
+
+
+                        <span>
+                            Continue with Google
+                        </span>
+
+                    </button>
+
+
+
+                    <!-- GITHUB -->
+
+                    <button
+                        type="button"
+                        class="btn-social"
+                        id="github-auth-btn"
+                    >
+
+                        <svg
+                            width="17"
+                            height="17"
+                            viewBox="0 0 24 24"
+                            fill="currentColor"
+                        >
+
+                            <path
+                                d="M12 .5C5.73.5.98 5.24.98 11.52c0 5.02 3.26 9.28 7.79 10.78.57.1.78-.25.78-.55 0-.27-.01-1.16-.02-2.11-3.17.69-3.84-1.35-3.84-1.35-.52-1.32-1.27-1.67-1.27-1.67-1.04-.71.08-.7.08-.7 1.15.08 1.75 1.18 1.75 1.18 1.02 1.75 2.68 1.24 3.33.95.1-.74.4-1.24.72-1.53-2.53-.29-5.19-1.27-5.19-5.63 0-1.24.44-2.26 1.17-3.05-.12-.29-.51-1.46.11-3.04 0 0 .96-.31 3.15 1.16a10.9 10.9 0 0 1 2.87-.39c.97.01 1.95.13 2.87.39 2.19-1.47 3.15-1.16 3.15-1.16.62 1.58.23 2.75.11 3.04.73.79 1.17 1.81 1.17 3.05 0 4.37-2.67 5.33-5.21 5.62.41.36.77 1.06.77 2.14 0 1.55-.01 2.79-.01 3.17 0 .3.2.66.79.55A11.03 11.03 0 0 0 23.02 11.5C23.02 5.24 18.27.5 12 .5z"
+                            />
+
+                        </svg>
+
+
+                        <span>
+                            Continue with GitHub
+                        </span>
+
+                    </button>
+
+                </div>
+
+
+
+                <!-- DIVIDER -->
+
+                <div class="auth-divider">
+                    OR
+                </div>
+
+
+                <div
+                    class="auth-status"
+                    id="auth-status"
+                    role="status"
+                    aria-live="polite"
+                ></div>
+
+
+                <!-- =================================================
+                     EMAIL LOGIN
+                ================================================== -->
+
+                <form
+                    class="auth-form"
+                    id="signup-form"
+                    novalidate
+                >
+
+                    <h4 class="auth-form-title">
+                        Continue with Email
+                    </h4>
+
+
+                    <!-- FULL NAME -->
+
+                    <div class="field">
+
+                        <label for="full-name">
+                            Full name
+                            <span class="req">*</span>
+                        </label>
+
+                        <input
+                            type="text"
+                            id="full-name"
+                            name="fullName"
+                            placeholder="Jamie Sato"
+                            autocomplete="name"
+                            required
+                        />
+
+                    </div>
+
+
+                    <!-- EMAIL -->
+
+                    <div class="field">
+
+                        <label for="email">
+                            Email
+                            <span class="req">*</span>
+                        </label>
+
+                        <input
+                            type="email"
+                            id="email"
+                            name="email"
+                            placeholder="user@example.com"
+                            autocomplete="email"
+                            required
+                        />
+
+                    </div>
+
+
+
+                    <!-- USERNAME -->
+
+                    <div class="field">
+
+                        <label for="username">
+                            Username
+                            <span class="req">*</span>
+                        </label>
+
+                        <input
+                            type="text"
+                            id="username"
+                            name="username"
+                            placeholder="jamiesato"
+                            autocomplete="username"
+                            required
+                            minlength="3"
+                            maxlength="20"
+                            pattern="[A-Za-z0-9_.]{3,20}"
+                        />
+
+                        <span class="field-hint">
+                            3–20 characters, letters,
+                            numbers, underscores or dots.
+                        </span>
+
+                    </div>
+
+
+
+                    <!-- GENDER -->
+
+                    <div class="field-row">
+
+
+                        <div class="field">
+
+                            <label for="gender">
+                                Gender
+                                <span class="req">*</span>
+                            </label>
+
+                            <select
+                                id="gender"
+                                name="gender"
+                                required
+                            >
+
+                                <option
+                                    value=""
+                                    disabled
+                                    selected
+                                >
+                                    Select
+                                </option>
+
+                                <option value="female">
+                                    Female
+                                </option>
+
+                                <option value="male">
+                                    Male
+                                </option>
+
+                                <option value="non-binary">
+                                    Non-binary
+                                </option>
+
+                                <option value="prefer-not-to-say">
+                                    Prefer not to say
+                                </option>
+
+                            </select>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- TERMS -->
+
+                    <div class="field-check">
+
+                        <input
+                            type="checkbox"
+                            id="agree-terms"
+                            name="agreeTerms"
+                            required
+                        />
+
+
+                        <label for="agree-terms">
+
+                            I agree to the
+
+                            <a
+                                href="#"
+                                onclick="event.preventDefault()"
+                            >
+                                Terms of Service
+                            </a>
+
+                            and
+
+                            <a
+                                href="#"
+                                onclick="event.preventDefault()"
+                            >
+                                Privacy Policy
+                            </a>.
+
+                        </label>
+
+                    </div>
+
+
+
+                    <!-- SUBMIT -->
+
+                    <button
+                        type="submit"
+                        class="btn-primary auth-submit"
+                        id="auth-submit-btn"
+                    >
+
+                        Send login link
+
+                        <svg
+                            width="14"
+                            height="14"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                        >
+
+                            <path d="M5 12h14" />
+
+                            <path
+                                d="M13 5l7 7-7 7"
+                            />
+
+                        </svg>
+
+                    </button>
+
+
+                    <p class="auth-note">
+                        We will email you a secure Firebase
+                        sign-in link. No password required.
+                    </p>
+
+                </form>
+
+
+
+                <!-- SIGN IN -->
+
+                <p class="auth-switch">
+
+                    Already have an account?
+
+                    <button
+                        type="button"
+                        id="auth-signin-link"
+                    >
+                        Sign in
+                    </button>
+
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- =========================================================
+         JAVASCRIPT
+    ========================================================== -->
+
+    <!-- Firebase configuration -->
+    <script
+        type="module"
+        src="./js/firebase-config.js"
+    ></script>
+
+
+    <!-- Authentication -->
+    <script
+        type="module"
+        src="./js/auth.js"
+    ></script>
+
+
+    <!-- Main application -->
+    <script
+        type="module"
+        src="./js/main.js"
+    ></script>
+
+</body>
+
+</html>
