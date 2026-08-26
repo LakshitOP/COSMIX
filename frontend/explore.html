@@ -1056,12 +1056,137 @@
       <a href="#analytics">Analytics</a>
     </nav>
     <div class="nav-right">
-      <button class="icon-btn" aria-label="Notifications">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
-          <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
-          <path d="M13.7 21a2 2 0 0 1-3.4 0" />
-        </svg>
-      </button>
+      <div class="notif-wrapper" id="notif-wrapper">
+        <button class="icon-btn notif-btn" id="notif-btn" aria-label="Notifications" aria-expanded="false">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+            <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
+            <path d="M13.7 21a2 2 0 0 1-3.4 0" />
+          </svg>
+          <span class="notif-badge" id="notif-badge">3</span>
+        </button>
+
+        <!-- Notification Panel Flyout -->
+        <div class="notif-dropdown" id="notif-dropdown">
+          <div class="notif-header">
+            <div class="notif-header-title">
+              <h4>Orbital Alerts</h4>
+              <span class="notif-unread-count" id="notif-unread-count">3 unread</span>
+            </div>
+            <button class="notif-mark-read" id="notif-mark-read" title="Mark all as read">Mark all read</button>
+          </div>
+
+          <div class="notif-tabs">
+            <button class="notif-tab active" data-filter="all">All</button>
+            <button class="notif-tab" data-filter="conjunctions">Conjunctions</button>
+            <button class="notif-tab" data-filter="system">System</button>
+          </div>
+
+          <div class="notif-list" id="notif-list">
+            <!-- Notification Item 1: Critical Conjunction -->
+            <div class="notif-item unread" data-category="conjunctions">
+              <div class="notif-icon notif-risk">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                  <line x1="12" y1="9" x2="12" y2="13" />
+                  <line x1="12" y1="17" x2="12.01" y2="17" />
+                </svg>
+              </div>
+              <div class="notif-content">
+                <div class="notif-title-row">
+                  <span class="notif-title">High-Risk Conjunction Alert</span>
+                  <span class="notif-time">14m ago</span>
+                </div>
+                <p class="notif-desc"><strong style="color:var(--text-1)">COSMOS 1408 DEB</strong> predicted within 3.2
+                  km of <strong style="color:var(--accent)">ISS (ZARYA)</strong> in 18h.</p>
+                <div class="notif-meta-tags">
+                  <span class="notif-tag tag-risk">Pc: 4.8e-4</span>
+                  <span class="notif-tag">LEO (418 km)</span>
+                </div>
+              </div>
+              <span class="unread-dot"></span>
+            </div>
+
+            <!-- Notification Item 2: Solar Activity -->
+            <div class="notif-item unread" data-category="system">
+              <div class="notif-icon notif-attention">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="5" />
+                  <line x1="12" y1="1" x2="12" y2="3" />
+                  <line x1="12" y1="21" x2="12" y2="23" />
+                  <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+                  <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+                  <line x1="1" y1="12" x2="3" y2="12" />
+                  <line x1="21" y1="12" x2="23" y2="12" />
+                  <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+                  <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+                </svg>
+              </div>
+              <div class="notif-content">
+                <div class="notif-title-row">
+                  <span class="notif-title">Space Weather Geomagnetic Storm</span>
+                  <span class="notif-time">1h ago</span>
+                </div>
+                <p class="notif-desc">G2-class coronal mass ejection impacting upper atmospheric density; orbital decay
+                  acceleration elevated.</p>
+                <div class="notif-meta-tags">
+                  <span class="notif-tag tag-attention">Kp Index: 6.2</span>
+                  <span class="notif-tag">Atmospheric Drag</span>
+                </div>
+              </div>
+              <span class="unread-dot"></span>
+            </div>
+
+            <!-- Notification Item 3: Maneuver Completed -->
+            <div class="notif-item unread" data-category="conjunctions">
+              <div class="notif-icon notif-safe">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10" />
+                  <path d="m9 12 2 2 4-4" />
+                </svg>
+              </div>
+              <div class="notif-content">
+                <div class="notif-title-row">
+                  <span class="notif-title">Collision Avoidance Burn Executed</span>
+                  <span class="notif-time">3h ago</span>
+                </div>
+                <p class="notif-desc"><strong style="color:var(--text-1)">STARLINK-3021</strong> performed autonomous
+                  delta-V burn (+1.2 m/s); miss distance increased to 12.8 km.</p>
+                <div class="notif-meta-tags">
+                  <span class="notif-tag tag-safe">Safe Clearance</span>
+                  <span class="notif-tag">Delta-V: +1.2 m/s</span>
+                </div>
+              </div>
+              <span class="unread-dot"></span>
+            </div>
+
+            <!-- Notification Item 4: New Catalog Ingestion (Read) -->
+            <div class="notif-item" data-category="system">
+              <div class="notif-icon notif-accent">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="3" />
+                  <path
+                    d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+                </svg>
+              </div>
+              <div class="notif-content">
+                <div class="notif-title-row">
+                  <span class="notif-title">Catalog TLE Bulk Synchronization</span>
+                  <span class="notif-time">6h ago</span>
+                </div>
+                <p class="notif-desc">Propagated 12,482 state vectors from 18th Space Defense Squadron feed. 14 new
+                  fragmentation pieces cataloged.</p>
+                <div class="notif-meta-tags">
+                  <span class="notif-tag">Epoch: 2026.238</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="notif-footer">
+            <a href="explore.html" class="notif-footer-link">Explore Conjunction Monitor →</a>
+          </div>
+        </div>
+      </div>
       <div class="avatar">JS</div>
     </div>
   </header>
@@ -1894,6 +2019,85 @@
 
     /* Auto-initialize Cesium Globe on load */
     initCesiumMap();
+
+    /* ============================================================
+       NOTIFICATION FLYOUT HANDLER
+    ============================================================ */
+    (function initNotifications() {
+      const notifBtn = document.getElementById('notif-btn');
+      const notifDropdown = document.getElementById('notif-dropdown');
+      const notifBadge = document.getElementById('notif-badge');
+      const unreadCount = document.getElementById('notif-unread-count');
+      const markReadBtn = document.getElementById('notif-mark-read');
+      const notifTabs = document.querySelectorAll('.notif-tab');
+      const notifItems = document.querySelectorAll('.notif-item');
+
+      if (!notifBtn || !notifDropdown) return;
+
+      function updateUnreadCount() {
+        const unread = document.querySelectorAll('.notif-item.unread').length;
+        if (unreadCount) unreadCount.textContent = unread + ' unread';
+        if (notifBadge) {
+          if (unread > 0) {
+            notifBadge.textContent = unread;
+            notifBadge.classList.remove('hidden');
+          } else {
+            notifBadge.classList.add('hidden');
+          }
+        }
+      }
+
+      notifBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const isOpen = notifDropdown.classList.toggle('open');
+        notifBtn.setAttribute('aria-expanded', isOpen);
+      });
+
+      document.addEventListener('click', (e) => {
+        if (!notifDropdown.contains(e.target) && !notifBtn.contains(e.target)) {
+          notifDropdown.classList.remove('open');
+          notifBtn.setAttribute('aria-expanded', 'false');
+        }
+      });
+
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          notifDropdown.classList.remove('open');
+          notifBtn.setAttribute('aria-expanded', 'false');
+        }
+      });
+
+      if (markReadBtn) {
+        markReadBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          notifItems.forEach(item => item.classList.remove('unread'));
+          updateUnreadCount();
+        });
+      }
+
+      notifItems.forEach(item => {
+        item.addEventListener('click', () => {
+          item.classList.remove('unread');
+          updateUnreadCount();
+        });
+      });
+
+      notifTabs.forEach(tab => {
+        tab.addEventListener('click', (e) => {
+          e.stopPropagation();
+          notifTabs.forEach(t => t.classList.remove('active'));
+          tab.classList.add('active');
+          const filter = tab.dataset.filter;
+          notifItems.forEach(item => {
+            if (filter === 'all' || item.dataset.category === filter) {
+              item.style.display = 'flex';
+            } else {
+              item.style.display = 'none';
+            }
+          });
+        });
+      });
+    })();
   </script>
 </body>
 
