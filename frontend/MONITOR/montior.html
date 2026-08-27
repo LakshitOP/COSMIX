@@ -1,0 +1,1606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ORBITAL — Monitor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    /* ---- ORBITAL Core Design System ---- */
+    --void:            #05070c;
+    --surface:         #0b0f18;
+    --surface-glass:   rgba(11, 15, 24, 0.72);
+    --surface-card:    rgba(16, 21, 31, 0.65);
+    --surface-hover:   rgba(22, 29, 43, 0.75);
+    --surface-subtle:  rgba(255, 255, 255, 0.02);
+
+    --hairline:        rgba(158, 176, 204, 0.08);
+    --hairline-strong: rgba(158, 176, 204, 0.16);
+    --hairline-focus:  rgba(143, 180, 255, 0.35);
+
+    --text-1:          #f0f4fc;
+    --text-2:          #9aa4b8;
+    --text-3:          #5c6479;
+    --text-muted:      #3d4353;
+
+    --accent:          #8fb4ff;
+    --accent-dim:      rgba(143, 180, 255, 0.12);
+    --accent-line:     rgba(143, 180, 255, 0.28);
+
+    --safe:            #4fd1a5;
+    --safe-dim:        rgba(79, 209, 165, 0.12);
+    --safe-line:       rgba(79, 209, 165, 0.3);
+
+    --attention:       #e8b657;
+    --attention-dim:   rgba(232, 182, 87, 0.12);
+    --attention-line:  rgba(232, 182, 87, 0.32);
+
+    --risk:            #ef6a6a;
+    --risk-dim:        rgba(239, 106, 106, 0.14);
+    --risk-line:       rgba(239, 106, 106, 0.35);
+
+    --font-display:    'Space Grotesk', -apple-system, sans-serif;
+    --font-body:       'Inter', -apple-system, sans-serif;
+    --font-mono:       'JetBrains Mono', monospace;
+
+    --ease:            cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  *{ margin:0; padding:0; box-sizing:border-box; }
+  html{ scroll-behavior:smooth; }
+  body{
+    background: var(--void);
+    color: var(--text-1);
+    font-family: var(--font-body);
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+    min-height: 100vh;
+  }
+
+  ::selection{ background: var(--accent-dim); color: var(--text-1); }
+  a{ color:inherit; text-decoration:none; }
+  button{ font-family: inherit; cursor:pointer; border:none; background:none; color:inherit; }
+
+  /* ---------------- grain overlay ---------------- */
+  .grain{
+    position: fixed; inset:0; z-index:1; pointer-events:none;
+    opacity: 0.035; mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  /* ---------------- navbar ---------------- */
+  header{
+    position: fixed; top:0; left:0; right:0; z-index: 100;
+    display:flex; align-items:center; justify-content:space-between;
+    padding: 16px clamp(20px, 5vw, 56px);
+    background: rgba(5,7,12,0.45);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--hairline);
+  }
+  .brand{
+    display:flex; align-items:center; gap:8px;
+    font-family: var(--font-display);
+    font-weight: 600; font-size: 15px;
+    letter-spacing: 0.02em;
+  }
+  .brand .mark{ color: var(--accent); font-size: 13px; }
+
+  nav.links{ display:flex; align-items:center; gap: 32px; }
+  nav.links a{
+    font-size: 13px; color: var(--text-2); font-weight: 500;
+    position: relative; padding: 4px 0;
+    transition: color .25s var(--ease);
+  }
+  nav.links a:hover{ color: var(--text-1); }
+  nav.links a.active{ color: var(--text-1); }
+  nav.links a.active::after{
+    content:''; position:absolute; left:0; right:0; bottom:-6px; height:1.5px;
+    background: var(--accent);
+    border-radius: 999px;
+  }
+
+  .nav-right{ display:flex; align-items:center; gap:16px; }
+  .icon-btn{
+    width: 32px; height: 32px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--text-2); background: transparent;
+    transition: all .2s var(--ease);
+  }
+  .icon-btn:hover{ background: var(--surface-card); color: var(--text-1); }
+  .avatar{
+    width: 28px; height: 28px; border-radius: 50%;
+    background: var(--surface-card);
+    border: 1px solid var(--hairline-strong);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10.5px; color: var(--text-2); font-weight: 600;
+  }
+
+  /* ---------------- main layout ---------------- */
+  .monitor-container{
+    max-width: 1140px;
+    margin: 0 auto;
+    padding: 100px clamp(20px, 4vw, 40px) 100px;
+    position: relative;
+    z-index: 2;
+  }
+
+  /* ---------------- page header ---------------- */
+  .page-header{
+    margin-bottom: 34px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  .header-left h1{
+    font-family: var(--font-display);
+    font-size: clamp(24px, 3vw, 32px);
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    color: var(--text-1);
+    margin-bottom: 4px;
+  }
+  .header-left p{
+    font-size: 13.5px;
+    color: var(--text-2);
+    font-weight: 400;
+  }
+  .freshness-badge{
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11.5px;
+    font-weight: 500;
+    color: var(--text-2);
+    background: var(--surface-card);
+    padding: 6px 14px;
+    border-radius: 999px;
+    border: 1px solid var(--hairline);
+  }
+  .status-dot{
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--safe);
+    box-shadow: 0 0 6px var(--safe);
+  }
+  .status-dot.pulsing{
+    animation: statusPulse 3s infinite ease-in-out;
+  }
+  @keyframes statusPulse{
+    0%,100%{ opacity: 1; transform: scale(1); }
+    50%{ opacity: 0.4; transform: scale(0.85); }
+  }
+
+  /* ============================================================
+     1. ORBITAL STATUS — HERO SECTION
+  ============================================================ */
+  .hero-status-grid{
+    display: grid;
+    grid-template-columns: 1.35fr 1fr;
+    gap: 20px;
+    margin-bottom: 24px;
+  }
+
+  .status-panel{
+    background: var(--surface-glass);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--hairline-strong);
+    border-radius: 18px;
+    padding: 32px 36px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    position: relative;
+    overflow: hidden;
+  }
+  .status-panel::before{
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--hairline-focus), transparent);
+  }
+
+  .status-top-label{
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-3);
+    margin-bottom: 12px;
+  }
+
+  .status-state{
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 6px;
+  }
+  .status-indicator{
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--safe);
+    box-shadow: 0 0 10px var(--safe-dim);
+  }
+  .status-indicator.state-stable{ background: var(--safe); box-shadow: 0 0 12px rgba(79, 209, 165, 0.4); }
+  .status-indicator.state-attention{ background: var(--attention); box-shadow: 0 0 12px rgba(232, 182, 87, 0.4); }
+  .status-indicator.state-high{ background: var(--risk); box-shadow: 0 0 12px rgba(239, 106, 106, 0.4); }
+
+  .status-title{
+    font-family: var(--font-display);
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: var(--text-1);
+  }
+
+  .status-caption{
+    font-size: 13px;
+    color: var(--text-2);
+    margin-bottom: 30px;
+  }
+
+  .status-summary-rows{
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding-top: 20px;
+    border-top: 1px solid var(--hairline);
+  }
+  .status-row{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12.5px;
+  }
+  .status-row span:first-child{ color: var(--text-2); }
+  .status-row span:last-child{
+    font-family: var(--font-mono);
+    color: var(--text-1);
+    font-weight: 600;
+  }
+
+  /* Minimal 2D Orbital Radar Canvas Panel */
+  .visual-panel{
+    background: var(--surface-glass);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--hairline-strong);
+    border-radius: 18px;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 240px;
+  }
+  #mini-orbit-canvas{
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+  .visual-overlay-tag{
+    position: absolute;
+    bottom: 14px;
+    left: 18px;
+    font-size: 9.5px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-3);
+    pointer-events: none;
+  }
+
+  /* ============================================================
+     2. KEY METRICS STRIP
+  ============================================================ */
+  .metrics-strip{
+    background: var(--surface-glass);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--hairline);
+    border-radius: 14px;
+    padding: 18px 28px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 48px;
+  }
+  .metric-col{
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+  .metric-val{
+    font-family: var(--font-display);
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--text-1);
+  }
+  .metric-lbl{
+    font-size: 11.5px;
+    color: var(--text-3);
+    font-weight: 500;
+  }
+  .metric-divider{
+    width: 1px;
+    height: 32px;
+    background: var(--hairline);
+    margin: 0 20px;
+  }
+
+  /* ============================================================
+     3. SECTION HEADINGS & COMMON STYLES
+  ============================================================ */
+  .section-block{
+    margin-bottom: 52px;
+  }
+  .section-head{
+    margin-bottom: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .section-head h2{
+    font-family: var(--font-display);
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: -0.015em;
+    color: var(--text-1);
+    margin-bottom: 2px;
+  }
+  .section-head p{
+    font-size: 12.5px;
+    color: var(--text-3);
+  }
+
+  /* ============================================================
+     4. PRIORITY EVENTS
+  ============================================================ */
+  .priority-cards{
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+
+  .priority-card{
+    background: var(--surface-glass);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--hairline-strong);
+    border-radius: 14px;
+    padding: 22px 24px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: all .25s var(--ease);
+    cursor: pointer;
+    position: relative;
+  }
+  .priority-card:hover{
+    border-color: var(--hairline-focus);
+    transform: translateY(-2px);
+    background: var(--surface-hover);
+  }
+
+  .pc-head{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+  .priority-pill{
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 3px 9px;
+    border-radius: 999px;
+  }
+  .priority-pill.high{
+    color: var(--risk);
+    background: var(--risk-dim);
+    border: 1px solid var(--risk-line);
+  }
+  .priority-pill.moderate{
+    color: var(--attention);
+    background: var(--attention-dim);
+    border: 1px solid var(--attention-line);
+  }
+  .priority-pill.low{
+    color: var(--safe);
+    background: var(--safe-dim);
+    border: 1px solid var(--safe-line);
+  }
+  .pill-dot{ width: 4.5px; height: 4.5px; border-radius: 50%; background: currentColor; }
+
+  .pc-objects{
+    font-family: var(--font-display);
+    font-size: 15.5px;
+    font-weight: 700;
+    color: var(--text-1);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    letter-spacing: -0.01em;
+  }
+  .pc-objects .sep-arrow{
+    color: var(--text-3);
+    font-weight: 400;
+    font-size: 13px;
+  }
+
+  .pc-metrics{
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    padding-top: 14px;
+    border-top: 1px solid var(--hairline);
+    margin-bottom: 14px;
+  }
+  .pc-metric-item span:first-child{
+    display: block;
+    font-size: 10.5px;
+    color: var(--text-3);
+    margin-bottom: 3px;
+  }
+  .pc-metric-item span:last-child{
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    color: var(--text-1);
+    font-weight: 600;
+  }
+
+  .pc-footer{
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+  }
+  .pc-link{
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--accent);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    transition: gap .2s var(--ease);
+  }
+  .priority-card:hover .pc-link{
+    gap: 7px;
+  }
+
+  /* ============================================================
+     5. UPCOMING CLOSE APPROACHES TABLE & FILTER
+  ============================================================ */
+  .filter-row{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+  }
+  .filter-segments{
+    display: flex;
+    background: var(--surface-card);
+    padding: 3px;
+    border-radius: 9px;
+    border: 1px solid var(--hairline);
+  }
+  .filter-seg-btn{
+    font-size: 11.5px;
+    font-weight: 500;
+    color: var(--text-3);
+    padding: 5px 13px;
+    border-radius: 6px;
+    transition: all .2s var(--ease);
+  }
+  .filter-seg-btn:hover{ color: var(--text-1); }
+  .filter-seg-btn.active{
+    background: var(--surface);
+    color: var(--text-1);
+    font-weight: 600;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  }
+
+  .filter-controls{
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .select-pill{
+    background: var(--surface-card);
+    border: 1px solid var(--hairline);
+    color: var(--text-2);
+    font-size: 12px;
+    padding: 6px 12px;
+    border-radius: 8px;
+    outline: none;
+    cursor: pointer;
+  }
+  .search-pill-wrap{
+    position: relative;
+  }
+  .search-pill{
+    background: var(--surface-card);
+    border: 1px solid var(--hairline);
+    color: var(--text-1);
+    font-size: 12px;
+    padding: 6px 12px 6px 28px;
+    border-radius: 8px;
+    outline: none;
+    width: 170px;
+    transition: width .25s var(--ease), border-color .25s var(--ease);
+  }
+  .search-pill:focus{
+    width: 220px;
+    border-color: var(--accent-line);
+  }
+  .search-icon-inline{
+    position: absolute;
+    left: 9px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-3);
+    font-size: 11px;
+    pointer-events: none;
+  }
+
+  /* Data Table */
+  .table-panel{
+    background: var(--surface-glass);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--hairline-strong);
+    border-radius: 14px;
+    overflow: hidden;
+  }
+  .data-table{
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12.5px;
+    text-align: left;
+  }
+  .data-table th{
+    padding: 12px 20px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-3);
+    border-bottom: 1px solid var(--hairline);
+    background: rgba(255,255,255,0.01);
+  }
+  .data-table td{
+    padding: 15px 20px;
+    border-bottom: 1px solid var(--hairline);
+    color: var(--text-2);
+    vertical-align: middle;
+  }
+  .data-table tbody tr{
+    transition: background .2s var(--ease);
+    cursor: pointer;
+  }
+  .data-table tbody tr:hover{
+    background: var(--surface-hover);
+  }
+  .data-table tbody tr:last-child td{
+    border-bottom: none;
+  }
+
+  .tbl-objects{
+    font-family: var(--font-display);
+    font-weight: 600;
+    color: var(--text-1);
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+  .tbl-objects .arrow{ color: var(--text-3); font-weight: 400; font-size: 11px; }
+
+  .tbl-metric{
+    font-family: var(--font-mono);
+    color: var(--text-1);
+    font-weight: 500;
+  }
+
+  /* ============================================================
+     6. MY WATCHLIST
+  ============================================================ */
+  .watchlist-grid{
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+  }
+  .watch-card{
+    background: var(--surface-glass);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--hairline-strong);
+    border-radius: 12px;
+    padding: 18px 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: all .25s var(--ease);
+    cursor: pointer;
+  }
+  .watch-card:hover{
+    border-color: var(--hairline-focus);
+    transform: translateY(-2px);
+    background: var(--surface-hover);
+  }
+  .watch-card.has-alert{
+    border-color: var(--attention-line);
+    background: linear-gradient(180deg, rgba(232,182,87,0.03) 0%, var(--surface-glass) 100%);
+  }
+
+  .watch-head{
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+  }
+  .watch-name{
+    font-family: var(--font-display);
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-1);
+  }
+  .watch-status-tag{
+    font-size: 9.5px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .watch-status-tag.normal{ color: var(--safe); }
+  .watch-status-tag.attention{ color: var(--attention); }
+
+  .watch-alert-callout{
+    background: var(--attention-dim);
+    border: 1px solid var(--attention-line);
+    border-radius: 6px;
+    padding: 6px 9px;
+    margin: 8px 0 10px;
+    font-size: 10.5px;
+    color: var(--text-1);
+    line-height: 1.4;
+  }
+  .watch-alert-callout strong{ color: var(--attention); font-weight: 600; }
+
+  .watch-metrics-row{
+    display: flex;
+    justify-content: space-between;
+    font-size: 11.5px;
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid var(--hairline);
+  }
+  .watch-metrics-row span:first-child{ color: var(--text-3); }
+  .watch-metrics-row span:last-child{ font-family: var(--font-mono); color: var(--text-2); }
+
+  /* ============================================================
+     7. RECENT ACTIVITY TIMELINE
+  ============================================================ */
+  .activity-panel{
+    background: var(--surface-glass);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--hairline-strong);
+    border-radius: 14px;
+    padding: 22px 26px;
+  }
+  .timeline{
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .timeline-item{
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    position: relative;
+  }
+  .tl-dot{
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--text-3);
+    margin-top: 5px;
+    flex-shrink: 0;
+  }
+  .timeline-item:first-child .tl-dot{
+    background: var(--accent);
+    box-shadow: 0 0 6px var(--accent);
+  }
+  .tl-content{
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .tl-time{
+    font-size: 11px;
+    color: var(--text-3);
+    font-family: var(--font-mono);
+  }
+  .tl-text{
+    font-size: 12.5px;
+    color: var(--text-2);
+  }
+  .tl-text strong{
+    color: var(--text-1);
+    font-weight: 600;
+  }
+
+  /* ============================================================
+     8. SLIDE-IN EVENT DETAILS DRAWER
+  ============================================================ */
+  .drawer-backdrop{
+    position: fixed;
+    inset: 0;
+    background: rgba(5, 7, 12, 0.6);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 200;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .3s var(--ease);
+  }
+  .drawer-backdrop.open{
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .drawer-panel{
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    max-width: 440px;
+    background: var(--surface);
+    border-left: 1px solid var(--hairline-strong);
+    z-index: 201;
+    padding: 32px 36px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transform: translateX(100%);
+    transition: transform .35s var(--ease);
+    box-shadow: -20px 0 60px rgba(0,0,0,0.6);
+    overflow-y: auto;
+  }
+  .drawer-backdrop.open .drawer-panel{
+    transform: translateX(0);
+  }
+
+  .drawer-header{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+  }
+  .drawer-tag{
+    font-size: 9.5px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-3);
+  }
+  .drawer-close-btn{
+    width: 28px; height: 28px; border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--text-3); background: var(--surface-card);
+    transition: color .2s var(--ease);
+  }
+  .drawer-close-btn:hover{ color: var(--text-1); }
+
+  .drawer-objects-hero{
+    margin-bottom: 28px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--hairline);
+  }
+  .drawer-obj-name{
+    font-family: var(--font-display);
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-1);
+    margin-bottom: 4px;
+  }
+  .drawer-obj-sub{
+    font-size: 11.5px;
+    color: var(--text-3);
+    font-family: var(--font-mono);
+  }
+
+  .drawer-metric-grid{
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+  .drawer-metric-card{
+    background: var(--surface-card);
+    border: 1px solid var(--hairline);
+    border-radius: 10px;
+    padding: 12px 14px;
+  }
+  .drawer-metric-card span:first-child{
+    display: block;
+    font-size: 10.5px;
+    color: var(--text-3);
+    margin-bottom: 4px;
+  }
+  .drawer-metric-card span:last-child{
+    font-family: var(--font-mono);
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-1);
+  }
+
+  .drawer-score-box{
+    background: var(--surface-card);
+    border: 1px solid var(--hairline-strong);
+    border-radius: 12px;
+    padding: 16px 18px;
+    margin-bottom: 28px;
+  }
+  .drawer-score-box h5{
+    font-size: 10.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-3);
+    margin-bottom: 6px;
+  }
+  .drawer-score-box .score-val{
+    font-family: var(--font-display);
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+  .drawer-score-box p{
+    font-size: 11.5px;
+    color: var(--text-2);
+    line-height: 1.5;
+  }
+
+  .drawer-actions{
+    display: flex;
+    gap: 10px;
+  }
+  .btn-drawer-primary{
+    flex: 1;
+    background: var(--accent);
+    color: var(--void);
+    font-size: 12.5px;
+    font-weight: 600;
+    padding: 11px 16px;
+    border-radius: 8px;
+    text-align: center;
+    transition: opacity .2s var(--ease);
+  }
+  .btn-drawer-primary:hover{ opacity: 0.9; }
+  .btn-drawer-secondary{
+    background: var(--surface-card);
+    color: var(--text-1);
+    font-size: 12.5px;
+    font-weight: 600;
+    padding: 11px 16px;
+    border-radius: 8px;
+    border: 1px solid var(--hairline-strong);
+    transition: background .2s var(--ease);
+  }
+  .btn-drawer-secondary:hover{ background: var(--surface-hover); }
+
+  /* ---------------- footer ---------------- */
+  footer{
+    border-top: 1px solid var(--hairline);
+    padding: 40px clamp(20px,5vw,56px);
+    display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px;
+    font-size: 12.5px; color: var(--text-3);
+  }
+
+  /* ---------------- responsive ---------------- */
+  @media(max-width: 960px){
+    .hero-status-grid{ grid-template-columns: 1fr; }
+    .watchlist-grid{ grid-template-columns: repeat(2, 1fr); }
+  }
+  @media(max-width: 680px){
+    .metrics-strip{ flex-direction: column; align-items: flex-start; gap: 14px; }
+    .metric-divider{ display: none; }
+    .priority-cards{ grid-template-columns: 1fr; }
+    .watchlist-grid{ grid-template-columns: 1fr; }
+    nav.links{ display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="grain"></div>
+
+<!-- Top Navigation -->
+<header>
+  <div class="brand">
+    <span class="mark">✦</span> ORBITAL
+  </div>
+  <nav class="links">
+    <a href="../frontend/home.html#home">Home</a>
+    <a href="../frontend/home.html#explore">Explore</a>
+    <a href="monitor.html" class="active">Monitor</a>
+    <a href="../frontend/home.html#analytics">Analytics</a>
+  </nav>
+  <div class="nav-right">
+    <button class="icon-btn" aria-label="Notifications">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>
+    </button>
+    <div class="avatar">JS</div>
+  </div>
+</header>
+
+<div class="monitor-container">
+
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="header-left">
+      <h1>Monitor</h1>
+      <p>Stay aware of important orbital events and potential close approaches.</p>
+    </div>
+    <div class="freshness-badge">
+      <span class="status-dot pulsing"></span> System operational · Last updated 32 seconds ago
+    </div>
+  </div>
+
+  <!-- 1. ORBITAL STATUS — HERO SECTION -->
+  <div class="hero-status-grid">
+    <div class="status-panel">
+      <div>
+        <div class="status-top-label">Orbital Environment</div>
+        <div class="status-state">
+          <div class="status-indicator state-stable" id="env-dot"></div>
+          <div class="status-title" id="env-title">STABLE</div>
+        </div>
+        <div class="status-caption" id="env-sub">No high-priority events detected requiring immediate intervention.</div>
+      </div>
+      <div class="status-summary-rows">
+        <div class="status-row"><span>Objects monitored</span><span>12,482</span></div>
+        <div class="status-row"><span>Active watchlist</span><span>12</span></div>
+        <div class="status-row"><span>Close approaches screened</span><span>3</span></div>
+      </div>
+    </div>
+
+    <!-- Minimal 2D Orbital Radar Canvas -->
+    <div class="visual-panel">
+      <canvas id="mini-orbit-canvas"></canvas>
+      <div class="visual-overlay-tag">Active Orbital Conjunction Plane · Screening Horizon T+48h</div>
+    </div>
+  </div>
+
+  <!-- 2. KEY METRICS ROW -->
+  <div class="metrics-strip">
+    <div class="metric-col">
+      <div class="metric-val">12,482</div>
+      <div class="metric-lbl">Objects monitored</div>
+    </div>
+    <div class="metric-divider"></div>
+    <div class="metric-col">
+      <div class="metric-val">8,421</div>
+      <div class="metric-lbl">Debris</div>
+    </div>
+    <div class="metric-divider"></div>
+    <div class="metric-col">
+      <div class="metric-val">3</div>
+      <div class="metric-lbl">Close approaches</div>
+    </div>
+    <div class="metric-divider"></div>
+    <div class="metric-col">
+      <div class="metric-val">12</div>
+      <div class="metric-lbl">Watched objects</div>
+    </div>
+  </div>
+
+  <!-- 3. PRIORITY EVENTS -->
+  <div class="section-block">
+    <div class="section-head">
+      <div>
+        <h2>Priority events</h2>
+        <p>Events requiring attention based on proximity screening</p>
+      </div>
+    </div>
+
+    <div class="priority-cards">
+      <!-- Event 1: High Priority -->
+      <div class="priority-card" onclick="openDrawer({
+        nameA: 'STARLINK-3112',
+        nameB: 'COSMOS 2251 DEBRIS',
+        noradA: '49122',
+        noradB: '34182',
+        sep: '4.2 km',
+        time: '18h 42m',
+        vel: '14.7 km/s',
+        score: 'HIGH',
+        scoreColor: 'var(--risk)',
+        note: 'This screening result indicates a potentially notable close approach in Low Earth Orbit.'
+      })">
+        <div>
+          <div class="pc-head">
+            <span class="priority-pill high"><span class="pill-dot"></span>HIGH</span>
+            <span style="font-size:11px;color:var(--text-3);font-family:var(--font-mono);">LEO · 548 km</span>
+          </div>
+          <div class="pc-objects">
+            <span>STARLINK-3112</span>
+            <span class="sep-arrow">↔</span>
+            <span>COSMOS 2251 DEBRIS</span>
+          </div>
+          <div class="pc-metrics">
+            <div class="pc-metric-item">
+              <span>Estimated separation</span>
+              <span>4.2 km</span>
+            </div>
+            <div class="pc-metric-item">
+              <span>Time to approach</span>
+              <span>18h 42m</span>
+            </div>
+            <div class="pc-metric-item">
+              <span>Relative velocity</span>
+              <span>14.7 km/s</span>
+            </div>
+          </div>
+        </div>
+        <div class="pc-footer">
+          <span class="pc-link">View event →</span>
+        </div>
+      </div>
+
+      <!-- Event 2: Moderate Priority -->
+      <div class="priority-card" onclick="openDrawer({
+        nameA: 'ISS (ZARYA)',
+        nameB: 'FENGYUN 1C DEBRIS',
+        noradA: '25544',
+        noradB: '31115',
+        sep: '18.7 km',
+        time: '2d 04h',
+        vel: '11.8 km/s',
+        score: 'MODERATE',
+        scoreColor: 'var(--attention)',
+        note: 'Secondary debris object trajectory passing within observation margin of crewed space station.'
+      })">
+        <div>
+          <div class="pc-head">
+            <span class="priority-pill moderate"><span class="pill-dot"></span>MODERATE</span>
+            <span style="font-size:11px;color:var(--text-3);font-family:var(--font-mono);">LEO · 418 km</span>
+          </div>
+          <div class="pc-objects">
+            <span>ISS (ZARYA)</span>
+            <span class="sep-arrow">↔</span>
+            <span>FENGYUN 1C DEBRIS</span>
+          </div>
+          <div class="pc-metrics">
+            <div class="pc-metric-item">
+              <span>Estimated separation</span>
+              <span>18.7 km</span>
+            </div>
+            <div class="pc-metric-item">
+              <span>Time to approach</span>
+              <span>2d 04h</span>
+            </div>
+            <div class="pc-metric-item">
+              <span>Relative velocity</span>
+              <span>11.8 km/s</span>
+            </div>
+          </div>
+        </div>
+        <div class="pc-footer">
+          <span class="pc-link">View event →</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. UPCOMING CLOSE APPROACHES DATA TABLE -->
+  <div class="section-block">
+    <div class="section-head">
+      <div>
+        <h2>Upcoming close approaches</h2>
+        <p>Screened conjunction events within the operational horizon</p>
+      </div>
+    </div>
+
+    <!-- Filter Bar -->
+    <div class="filter-row">
+      <div class="filter-segments">
+        <button class="filter-seg-btn active" onclick="setTableFilter('ALL', this)">All</button>
+        <button class="filter-seg-btn" onclick="setTableFilter('HIGH', this)">High</button>
+        <button class="filter-seg-btn" onclick="setTableFilter('MODERATE', this)">Moderate</button>
+        <button class="filter-seg-btn" onclick="setTableFilter('LOW', this)">Low</button>
+      </div>
+      <div class="filter-controls">
+        <select class="select-pill">
+          <option>Next 24h</option>
+          <option>Next 48h</option>
+          <option>Next 7 Days</option>
+        </select>
+        <select class="select-pill">
+          <option>All Objects</option>
+          <option>Active Payloads</option>
+          <option>Debris Remnants</option>
+        </select>
+        <div class="search-pill-wrap">
+          <span class="search-icon-inline">🔎</span>
+          <input type="text" id="ca-search-input" class="search-pill" placeholder="Search objects..." onkeyup="handleTableSearch()">
+        </div>
+      </div>
+    </div>
+
+    <!-- Table Panel -->
+    <div class="table-panel">
+      <table class="data-table" id="ca-data-table">
+        <thead>
+          <tr>
+            <th>Objects</th>
+            <th>Estimated Separation</th>
+            <th>Time to Approach</th>
+            <th>Relative Velocity</th>
+            <th>Proximity Score</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Row 1 -->
+          <tr data-score="HIGH" onclick="openDrawer({
+            nameA: 'SAT-1024 (STARLINK)',
+            nameB: 'DEB-8821 (COSMOS)',
+            noradA: '49122',
+            noradB: '34182',
+            sep: '4.2 km',
+            time: '18h 42m',
+            vel: '14.7 km/s',
+            score: 'HIGH',
+            scoreColor: 'var(--risk)',
+            note: 'Close approach screening indicates elevated risk factor.'
+          })">
+            <td>
+              <div class="tbl-objects">
+                <span>SAT-1024</span>
+                <span class="arrow">↔</span>
+                <span>DEB-8821</span>
+              </div>
+            </td>
+            <td><span class="tbl-metric" style="color:var(--risk);">4.2 km</span></td>
+            <td><span class="tbl-metric">18h 42m</span></td>
+            <td><span class="tbl-metric">14.7 km/s</span></td>
+            <td><span class="priority-pill high"><span class="pill-dot"></span>HIGH</span></td>
+          </tr>
+
+          <!-- Row 2 -->
+          <tr data-score="MODERATE" onclick="openDrawer({
+            nameA: 'SAT-5521 (ONEWEB)',
+            nameB: 'DEB-1920 (CZ-4C)',
+            noradA: '45118',
+            noradB: '28930',
+            sep: '8.7 km',
+            time: '11h 15m',
+            vel: '12.4 km/s',
+            score: 'MODERATE',
+            scoreColor: 'var(--attention)',
+            note: 'Moderate approach distance within standard tracking buffer.'
+          })">
+            <td>
+              <div class="tbl-objects">
+                <span>SAT-5521</span>
+                <span class="arrow">↔</span>
+                <span>DEB-1920</span>
+              </div>
+            </td>
+            <td><span class="tbl-metric" style="color:var(--attention);">8.7 km</span></td>
+            <td><span class="tbl-metric">11h 15m</span></td>
+            <td><span class="tbl-metric">12.4 km/s</span></td>
+            <td><span class="priority-pill moderate"><span class="pill-dot"></span>MODERATE</span></td>
+          </tr>
+
+          <!-- Row 3 -->
+          <tr data-score="LOW" onclick="openDrawer({
+            nameA: 'SAT-2041 (SENTINEL)',
+            nameB: 'SAT-8212 (METOP)',
+            noradA: '41456',
+            noradB: '38857',
+            sep: '19.0 km',
+            time: '2d 06h',
+            vel: '8.2 km/s',
+            score: 'LOW',
+            scoreColor: 'var(--safe)',
+            note: 'Pass distance satisfies standard nominal safety thresholds.'
+          })">
+            <td>
+              <div class="tbl-objects">
+                <span>SAT-2041</span>
+                <span class="arrow">↔</span>
+                <span>SAT-8212</span>
+              </div>
+            </td>
+            <td><span class="tbl-metric" style="color:var(--safe);">19.0 km</span></td>
+            <td><span class="tbl-metric">2d 06h</span></td>
+            <td><span class="tbl-metric">8.2 km/s</span></td>
+            <td><span class="priority-pill low"><span class="pill-dot"></span>LOW</span></td>
+          </tr>
+
+          <!-- Row 4 -->
+          <tr data-score="LOW" onclick="openDrawer({
+            nameA: 'VIASAT-3',
+            nameB: 'INMARSAT-4',
+            noradA: '56367',
+            noradB: '28899',
+            sep: '34.5 km',
+            time: '3d 12h',
+            vel: '0.4 km/s',
+            score: 'LOW',
+            scoreColor: 'var(--safe)',
+            note: 'Geostationary clearance margin nominal.'
+          })">
+            <td>
+              <div class="tbl-objects">
+                <span>VIASAT-3</span>
+                <span class="arrow">↔</span>
+                <span>INMARSAT-4</span>
+              </div>
+            </td>
+            <td><span class="tbl-metric" style="color:var(--safe);">34.5 km</span></td>
+            <td><span class="tbl-metric">3d 12h</span></td>
+            <td><span class="tbl-metric">0.4 km/s</span></td>
+            <td><span class="priority-pill low"><span class="pill-dot"></span>LOW</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 5. MY WATCHLIST -->
+  <div class="section-block">
+    <div class="section-head">
+      <div>
+        <h2>My watchlist</h2>
+        <p>Direct tracking on high-value designated space assets</p>
+      </div>
+      <div>
+        <button class="freshness-badge" onclick="alert('Asset added to watchlist.')" style="cursor:pointer;">+ Watch Object</button>
+      </div>
+    </div>
+
+    <div class="watchlist-grid">
+      <!-- Item 1: Normal -->
+      <div class="watch-card">
+        <div>
+          <div class="watch-head">
+            <div class="watch-name">ISS</div>
+            <span class="watch-status-tag normal"><span class="status-dot"></span>Normal</span>
+          </div>
+          <div class="watch-metrics-row">
+            <span>Altitude</span>
+            <span>421 km</span>
+          </div>
+          <div class="watch-metrics-row">
+            <span>Next event</span>
+            <span>None</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Item 2: Normal -->
+      <div class="watch-card">
+        <div>
+          <div class="watch-head">
+            <div class="watch-name">Hubble</div>
+            <span class="watch-status-tag normal"><span class="status-dot"></span>Normal</span>
+          </div>
+          <div class="watch-metrics-row">
+            <span>Altitude</span>
+            <span>538 km</span>
+          </div>
+          <div class="watch-metrics-row">
+            <span>Next event</span>
+            <span>None</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Item 3: Attention Alert -->
+      <div class="watch-card has-alert">
+        <div>
+          <div class="watch-head">
+            <div class="watch-name">STARLINK-3112</div>
+            <span class="watch-status-tag attention"><span class="status-dot" style="background:var(--attention);box-shadow:0 0 6px var(--attention);"></span>Attention</span>
+          </div>
+          <div class="watch-alert-callout">
+            <strong>Close approach detected</strong><br>
+            18h 42m · Estimated separation: 4.2 km
+          </div>
+          <div class="watch-metrics-row">
+            <span>Altitude</span>
+            <span>548 km</span>
+          </div>
+          <div class="watch-metrics-row">
+            <span>Action</span>
+            <span style="color:var(--accent);">View →</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Item 4: Normal -->
+      <div class="watch-card">
+        <div>
+          <div class="watch-head">
+            <div class="watch-name">NOAA-20</div>
+            <span class="watch-status-tag normal"><span class="status-dot"></span>Normal</span>
+          </div>
+          <div class="watch-metrics-row">
+            <span>Altitude</span>
+            <span>824 km</span>
+          </div>
+          <div class="watch-metrics-row">
+            <span>Next event</span>
+            <span>None</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. RECENT ACTIVITY TIMELINE -->
+  <div class="section-block">
+    <div class="section-head">
+      <div>
+        <h2>Recent activity</h2>
+        <p>Live operational log from telemetry feeds and propagation algorithms</p>
+      </div>
+    </div>
+
+    <div class="activity-panel">
+      <div class="timeline">
+        <div class="timeline-item">
+          <div class="tl-dot"></div>
+          <div class="tl-content">
+            <span class="tl-time">32 sec ago</span>
+            <span class="tl-text"><strong>Orbital data synchronized</strong> — 12,482 objects propagated for T+48h window.</span>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="tl-dot"></div>
+          <div class="tl-content">
+            <span class="tl-time">4 min ago</span>
+            <span class="tl-text"><strong>New object added to catalog</strong> — Transporter-11 upper stage fragment cataloged.</span>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="tl-dot"></div>
+          <div class="tl-content">
+            <span class="tl-time">12 min ago</span>
+            <span class="tl-text"><strong>Close approach updated</strong> — STARLINK-3112 separation revised to 4.2 km.</span>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="tl-dot"></div>
+          <div class="tl-content">
+            <span class="tl-time">24 min ago</span>
+            <span class="tl-text"><strong>Watchlist object position updated</strong> — ISS orbital state vector refreshed via Space-Track.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /monitor-container -->
+
+<!-- Right-Side Event Details Slide-in Drawer -->
+<div class="drawer-backdrop" id="drawer-backdrop" onclick="closeDrawer(event)">
+  <div class="drawer-panel" id="drawer-panel" onclick="event.stopPropagation()">
+    <div>
+      <div class="drawer-header">
+        <span class="drawer-tag">Close Approach Screening Details</span>
+        <button class="drawer-close-btn" onclick="closeDrawer()">✕</button>
+      </div>
+
+      <div class="drawer-objects-hero">
+        <div class="drawer-obj-name" id="dr-obj-title">STARLINK-3112 ↔ DEBRIS-34182</div>
+        <div class="drawer-obj-sub" id="dr-obj-norad">NORAD ID: 49122 ↔ NORAD ID: 34182</div>
+      </div>
+
+      <div class="drawer-metric-grid">
+        <div class="drawer-metric-card">
+          <span>Estimated separation</span>
+          <span id="dr-sep">4.2 km</span>
+        </div>
+        <div class="drawer-metric-card">
+          <span>Time to approach</span>
+          <span id="dr-time">18h 42m</span>
+        </div>
+        <div class="drawer-metric-card">
+          <span>Relative velocity</span>
+          <span id="dr-vel">14.7 km/s</span>
+        </div>
+        <div class="drawer-metric-card">
+          <span>Conjunction plane</span>
+          <span>LEO · 548 km</span>
+        </div>
+      </div>
+
+      <div class="drawer-score-box">
+        <h5>Proximity Score</h5>
+        <div class="score-val" id="dr-score" style="color:var(--risk);">HIGH</div>
+        <p id="dr-note">This screening result indicates a potentially notable close approach. Ephemeris propagation uncertainty has been screened within 3-sigma confidence intervals.</p>
+      </div>
+    </div>
+
+    <div class="drawer-actions">
+      <a href="../frontend/home.html#explore" class="btn-drawer-primary">View in Explore</a>
+      <button class="btn-drawer-secondary" onclick="alert('Asset pinned to watchlist.')">Add to Watchlist</button>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div>
+    ✦ ORBITAL MONITOR · Intelligent Space Situational Awareness
+  </div>
+  <div>
+    Calm · Scientific · High Information Density
+  </div>
+</footer>
+
+<script>
+  // ---------------- Minimal 2D Orbital Radar Canvas ----------------
+  (function(){
+    const canvas = document.getElementById('mini-orbit-canvas');
+    if(!canvas) return;
+    const ctx = canvas.getContext('2d');
+
+    function resize(){
+      canvas.width = canvas.parentElement.clientWidth;
+      canvas.height = canvas.parentElement.clientHeight;
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    let angle = 0;
+
+    function render(){
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const cx = canvas.width / 2;
+      const cy = canvas.height / 2;
+
+      // Earth Core Center
+      const earthGrad = ctx.createRadialGradient(cx, cy, 2, cx, cy, 14);
+      earthGrad.addColorStop(0, 'rgba(143, 180, 255, 0.9)');
+      earthGrad.addColorStop(1, 'rgba(143, 180, 255, 0.1)');
+      ctx.fillStyle = earthGrad;
+      ctx.beginPath();
+      ctx.arc(cx, cy, 12, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Earth Ring
+      ctx.strokeStyle = 'rgba(143, 180, 255, 0.3)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.arc(cx, cy, 12, 0, Math.PI * 2);
+      ctx.stroke();
+
+      // Orbital Track Rings
+      const rings = [
+        { rx: 60, ry: 24, rot: -0.2, stroke: 'rgba(158, 176, 204, 0.12)' },
+        { rx: 110, ry: 45, rot: 0.35, stroke: 'rgba(158, 176, 204, 0.15)' },
+        { rx: 160, ry: 65, rot: -0.15, stroke: 'rgba(143, 180, 255, 0.2)' }
+      ];
+
+      rings.forEach(r => {
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.rotate(r.rot);
+        ctx.strokeStyle = r.stroke;
+        ctx.setLineDash([3, 5]);
+        ctx.beginPath();
+        ctx.ellipse(0, 0, r.rx, r.ry, 0, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.restore();
+      });
+
+      // Orbiting Object Nodes
+      const objects = [
+        { rx: 60, ry: 24, rot: -0.2, speed: 0.008, color: '#4fd1a5', size: 3, label: 'ISS' },
+        { rx: 110, ry: 45, rot: 0.35, speed: -0.005, color: '#8fb4ff', size: 3, label: 'STARLINK' },
+        { rx: 160, ry: 65, rot: -0.15, speed: 0.003, color: '#ef6a6a', size: 3.5, label: 'DEBRIS' }
+      ];
+
+      objects.forEach((obj, idx) => {
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.rotate(obj.rot);
+
+        const currentAngle = angle * (idx + 1) * obj.speed;
+        const x = Math.cos(currentAngle) * obj.rx;
+        const y = Math.sin(currentAngle) * obj.ry;
+
+        // Glow
+        ctx.fillStyle = obj.color;
+        ctx.shadowColor = obj.color;
+        ctx.shadowBlur = 8;
+        ctx.beginPath();
+        ctx.arc(x, y, obj.size, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+
+        // Label
+        ctx.fillStyle = 'rgba(232, 236, 243, 0.7)';
+        ctx.font = '9px "JetBrains Mono", monospace';
+        ctx.fillText(obj.label, x + 6, y - 4);
+
+        ctx.restore();
+      });
+
+      angle += 1;
+      requestAnimationFrame(render);
+    }
+    render();
+  })();
+
+  // ---------------- Drawer Controls ----------------
+  function openDrawer(data){
+    document.getElementById('dr-obj-title').innerText = `${data.nameA} ↔ ${data.nameB}`;
+    document.getElementById('dr-obj-norad').innerText = `NORAD ID: ${data.noradA} ↔ NORAD ID: ${data.noradB}`;
+    document.getElementById('dr-sep').innerText = data.sep;
+    document.getElementById('dr-time').innerText = data.time;
+    document.getElementById('dr-vel').innerText = data.vel;
+    const scoreElem = document.getElementById('dr-score');
+    scoreElem.innerText = data.score;
+    scoreElem.style.color = data.scoreColor || 'var(--risk)';
+    document.getElementById('dr-note').innerText = data.note;
+
+    document.getElementById('drawer-backdrop').classList.add('open');
+  }
+
+  function closeDrawer(e){
+    if(e && e.target !== document.getElementById('drawer-backdrop') && !e.target.classList.contains('drawer-close-btn')) return;
+    document.getElementById('drawer-backdrop').classList.remove('open');
+  }
+
+  // ---------------- Table Filtering ----------------
+  function setTableFilter(score, btn){
+    document.querySelectorAll('.filter-seg-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+
+    const rows = document.querySelectorAll('#ca-data-table tbody tr');
+    rows.forEach(r => {
+      const rowScore = r.getAttribute('data-score');
+      if(score === 'ALL' || rowScore === score){
+        r.style.display = '';
+      } else {
+        r.style.display = 'none';
+      }
+    });
+  }
+
+  function handleTableSearch(){
+    const q = document.getElementById('ca-search-input').value.toUpperCase();
+    const rows = document.querySelectorAll('#ca-data-table tbody tr');
+    rows.forEach(r => {
+      const text = r.innerText.toUpperCase();
+      r.style.display = text.includes(q) ? '' : 'none';
+    });
+  }
+</script>
+
+</body>
+</html>

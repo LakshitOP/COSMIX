@@ -1,0 +1,2104 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ORBITAL — Explore</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+
+  <!-- CesiumJS Styles & Library -->
+  <link href="https://cesium.com/downloads/cesiumjs/releases/1.119/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
+  <script src="https://cesium.com/downloads/cesiumjs/releases/1.119/Build/Cesium/Cesium.js"></script>
+
+  <style>
+    /* ============================================================
+     EXPLORE PAGE LAYOUT & COMPONENTS
+  ============================================================ */
+    .explore-layout {
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      min-height: 100svh;
+      padding-top: 65px;
+      /* header offset */
+    }
+
+    /* ---------- Sidebar ---------- */
+    .sidebar {
+      position: sticky;
+      top: 65px;
+      height: calc(100svh - 65px);
+      overflow-y: auto;
+      border-right: 1px solid var(--hairline);
+      background: var(--surface);
+      display: flex;
+      flex-direction: column;
+      padding: 28px 0;
+      gap: 4px;
+      z-index: 10;
+      scrollbar-width: none;
+    }
+
+    .sidebar::-webkit-scrollbar {
+      display: none;
+    }
+
+    .sidebar-section-title {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--text-3);
+      padding: 0 24px;
+      margin-bottom: 12px;
+    }
+
+    .sidebar-link {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 24px;
+      font-size: 13.5px;
+      font-weight: 500;
+      color: var(--text-2);
+      cursor: pointer;
+      border: none;
+      background: transparent;
+      width: 100%;
+      text-align: left;
+      transition: background .2s var(--ease), color .2s var(--ease);
+      border-left: 3px solid transparent;
+      position: relative;
+      font-family: var(--font-body);
+    }
+
+    .sidebar-link:hover {
+      background: rgba(255, 255, 255, 0.03);
+      color: var(--text-1);
+    }
+
+    .sidebar-link.active {
+      color: var(--text-1);
+      background: var(--accent-dim);
+      border-left-color: var(--accent);
+      font-weight: 600;
+    }
+
+    .sidebar-link .nav-icon {
+      font-size: 16px;
+      line-height: 1;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .sidebar-link .badge {
+      margin-left: auto;
+      font-size: 10.5px;
+      font-weight: 600;
+      color: var(--accent);
+      background: var(--accent-dim);
+      border: 1px solid var(--hairline-strong);
+      padding: 2px 7px;
+      border-radius: 99px;
+      letter-spacing: 0.02em;
+    }
+
+    .sidebar-divider {
+      height: 1px;
+      background: var(--hairline);
+      margin: 16px 20px;
+    }
+
+    /* ---------- Main Panels ---------- */
+    .explore-main {
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      background: var(--void);
+    }
+
+    .tab-panel {
+      display: none;
+    }
+
+    .tab-panel.active {
+      display: block;
+    }
+
+    /* ----------------------------------------------------
+     TAB 1: 🌍 ORBITAL MAP (CESIUM ION)
+  ---------------------------------------------------- */
+    .map-wrap {
+      position: relative;
+      width: 100%;
+      height: calc(100svh - 65px);
+      overflow: hidden;
+      background: var(--void);
+    }
+
+    #cesiumContainer {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      background: var(--void);
+    }
+
+    .cesium-widget-credits,
+    .cesium-credit-logoContainer,
+    .cesium-credit-textContainer,
+    .cesium-viewer-bottom {
+      display: none !important;
+    }
+
+    .cesium-widget,
+    .cesium-widget canvas {
+      width: 100%;
+      height: 100%;
+      outline: none;
+    }
+
+    .map-vignette {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      pointer-events: none;
+      background:
+        radial-gradient(ellipse 70% 60% at 50% 50%, rgba(5, 7, 12, 0) 0%, rgba(5, 7, 12, 0.25) 65%, rgba(5, 7, 12, 0.85) 100%);
+    }
+
+    /* Map top controls */
+    .map-toolbar {
+      position: absolute;
+      top: 20px;
+      left: 24px;
+      right: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      z-index: 5;
+      pointer-events: none;
+      flex-wrap: wrap;
+    }
+
+    .map-toolbar>* {
+      pointer-events: auto;
+    }
+
+    .map-title-card {
+      background: rgba(11, 15, 24, 0.82);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--hairline-strong);
+      border-radius: 12px;
+      padding: 10px 18px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .map-title-card h2 {
+      font-family: var(--font-display);
+      font-size: 14.5px;
+      font-weight: 600;
+      color: var(--text-1);
+    }
+
+    .live-indicator {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 10.5px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      color: var(--safe);
+      text-transform: uppercase;
+    }
+
+    .live-indicator .live-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--safe);
+      box-shadow: 0 0 8px var(--safe);
+      animation: livePulse 2s ease-in-out infinite;
+    }
+
+    @keyframes livePulse {
+
+      0%,
+      100% {
+        opacity: 1;
+        transform: scale(1);
+      }
+
+      50% {
+        opacity: 0.4;
+        transform: scale(0.85);
+      }
+    }
+
+    .map-controls {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .map-toggle-btn {
+      background: rgba(11, 15, 24, 0.82);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--hairline-strong);
+      border-radius: 10px;
+      padding: 9px 14px;
+      color: var(--text-2);
+      font-size: 12px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      cursor: pointer;
+      font-family: var(--font-body);
+      transition: all .25s var(--ease);
+    }
+
+    .map-toggle-btn:hover {
+      background: var(--surface-2);
+      color: var(--text-1);
+      border-color: var(--hairline-strong);
+    }
+
+    .map-toggle-btn.active {
+      color: var(--accent);
+      border-color: var(--accent-line);
+      background: var(--accent-dim);
+    }
+
+    /* Map overlay legend & HUD */
+    .map-legend {
+      position: absolute;
+      bottom: 24px;
+      left: 24px;
+      z-index: 5;
+      background: rgba(11, 15, 24, 0.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--hairline-strong);
+      border-radius: 12px;
+      padding: 14px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+      min-width: 175px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 11.5px;
+      color: var(--text-2);
+      font-weight: 500;
+    }
+
+    .legend-color {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .map-hud {
+      position: absolute;
+      bottom: 24px;
+      right: 24px;
+      z-index: 5;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      align-items: flex-end;
+    }
+
+    .hud-card {
+      background: rgba(11, 15, 24, 0.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--hairline-strong);
+      border-radius: 10px;
+      padding: 8px 14px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 12px;
+    }
+
+    .hud-card .hud-title {
+      color: var(--text-3);
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-size: 10px;
+    }
+
+    .hud-card .hud-value {
+      color: var(--text-1);
+      font-family: var(--font-display);
+      font-weight: 600;
+    }
+
+    /* Popover */
+    .map-popover {
+      position: absolute;
+      z-index: 15;
+      pointer-events: none;
+      background: rgba(11, 15, 24, 0.9);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--hairline-strong);
+      border-radius: 12px;
+      padding: 14px 16px;
+      min-width: 200px;
+      opacity: 0;
+      transform: translateY(4px) scale(0.98);
+      transition: opacity .2s var(--ease), transform .2s var(--ease);
+    }
+
+    .map-popover.show {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+
+    .mp-badge {
+      display: inline-block;
+      margin-bottom: 8px;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 3px 7px;
+      border-radius: 4px;
+    }
+
+    .mp-badge-sat {
+      color: var(--accent);
+      background: var(--accent-dim);
+    }
+
+    .mp-badge-deb {
+      color: var(--text-3);
+      background: rgba(92, 100, 121, 0.2);
+    }
+
+    .mp-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-1);
+      margin-bottom: 8px;
+    }
+
+    .mp-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      font-size: 11px;
+      color: var(--text-3);
+      padding: 2px 0;
+    }
+
+    .mp-row span:last-child {
+      color: var(--text-2);
+      font-weight: 500;
+    }
+
+    /* ----------------------------------------------------
+     TAB 2: 🛰️ SATELLITES
+  ---------------------------------------------------- */
+    .panel-container {
+      padding: 48px clamp(20px, 4vw, 56px) 80px;
+      max-width: 1200px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    .panel-header {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      margin-bottom: 32px;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .panel-header h1 {
+      font-family: var(--font-display);
+      font-size: clamp(24px, 3.5vw, 34px);
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      color: var(--text-1);
+      line-height: 1.15;
+    }
+
+    .panel-header p {
+      margin-top: 8px;
+      font-size: 14.5px;
+      color: var(--text-2);
+      line-height: 1.55;
+      max-width: 580px;
+    }
+
+    .filters-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 24px;
+    }
+
+    .filter-pill {
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 12.5px;
+      font-weight: 600;
+      border: 1px solid var(--hairline);
+      background: var(--surface);
+      color: var(--text-2);
+      cursor: pointer;
+      font-family: var(--font-body);
+      transition: all .2s var(--ease);
+    }
+
+    .filter-pill:hover {
+      border-color: var(--hairline-strong);
+      color: var(--text-1);
+      background: var(--surface-2);
+    }
+
+    .filter-pill.active {
+      color: var(--accent);
+      border-color: var(--accent-line);
+      background: var(--accent-dim);
+    }
+
+    .filter-spacer {
+      flex: 1;
+    }
+
+    .total-count-pill {
+      font-size: 12px;
+      color: var(--text-3);
+      font-weight: 600;
+      background: var(--surface-2);
+      border: 1px solid var(--hairline);
+      border-radius: 8px;
+      padding: 7px 14px;
+    }
+
+    /* Table styling */
+    .table-card {
+      background: var(--surface);
+      border: 1px solid var(--hairline);
+      border-radius: 14px;
+      overflow: hidden;
+    }
+
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      text-align: left;
+    }
+
+    .data-table thead th {
+      padding: 14px 18px;
+      font-size: 10.5px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-3);
+      border-bottom: 1px solid var(--hairline);
+      background: rgba(255, 255, 255, 0.015);
+      white-space: nowrap;
+    }
+
+    .data-table tbody tr {
+      border-bottom: 1px solid var(--hairline);
+      transition: background .2s var(--ease);
+      cursor: pointer;
+    }
+
+    .data-table tbody tr:last-child {
+      border-bottom: none;
+    }
+
+    .data-table tbody tr:hover {
+      background: var(--surface-2);
+    }
+
+    .data-table tbody td {
+      padding: 15px 18px;
+      color: var(--text-2);
+      vertical-align: middle;
+    }
+
+    .data-table tbody td.primary-cell {
+      color: var(--text-1);
+      font-weight: 600;
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .status-badge::before {
+      content: "";
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+    }
+
+    .status-active::before {
+      background: var(--safe);
+      box-shadow: 0 0 6px var(--safe);
+    }
+
+    .status-inactive::before {
+      background: var(--text-3);
+    }
+
+    .status-attention::before {
+      background: var(--attention);
+      box-shadow: 0 0 6px var(--attention);
+    }
+
+    .orbit-chip {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 3px 8px;
+      border-radius: 5px;
+      background: var(--surface-2);
+      color: var(--text-3);
+      border: 1px solid var(--hairline);
+    }
+
+    .orbit-chip.leo {
+      color: var(--accent);
+      border-color: var(--accent-line);
+      background: var(--accent-dim);
+    }
+
+    .orbit-chip.meo {
+      color: var(--attention);
+      border-color: rgba(232, 182, 87, 0.3);
+      background: rgba(232, 182, 87, 0.08);
+    }
+
+    .orbit-chip.geo {
+      color: var(--safe);
+      border-color: rgba(79, 209, 165, 0.3);
+      background: rgba(79, 209, 165, 0.08);
+    }
+
+    .load-more-container {
+      display: flex;
+      justify-content: center;
+      margin-top: 36px;
+    }
+
+    .btn-load {
+      padding: 12px 28px;
+      border-radius: 10px;
+      border: 1px solid var(--hairline-strong);
+      background: var(--surface);
+      color: var(--text-2);
+      font-size: 13px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      font-family: var(--font-body);
+      transition: all .25s var(--ease);
+    }
+
+    .btn-load:hover {
+      background: var(--surface-2);
+      color: var(--text-1);
+      border-color: var(--hairline-strong);
+    }
+
+    /* ----------------------------------------------------
+     TAB 3: ☄️ DEBRIS
+  ---------------------------------------------------- */
+    .notice-banner {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      background: rgba(232, 182, 87, 0.07);
+      border: 1px solid rgba(232, 182, 87, 0.22);
+      border-radius: 12px;
+      padding: 18px 20px;
+      margin-bottom: 28px;
+    }
+
+    .notice-banner .banner-icon {
+      color: var(--attention);
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .notice-banner .banner-heading {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-1);
+      margin-bottom: 4px;
+    }
+
+    .notice-banner .banner-desc {
+      font-size: 13px;
+      color: var(--text-2);
+      line-height: 1.55;
+    }
+
+    .debris-grid-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+      gap: 18px;
+    }
+
+    .debris-item-card {
+      background: var(--surface);
+      border: 1px solid var(--hairline);
+      border-radius: 14px;
+      padding: 24px 22px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      cursor: pointer;
+      transition: border-color .25s var(--ease), background .25s var(--ease), transform .25s var(--ease);
+    }
+
+    .debris-item-card:hover {
+      border-color: var(--hairline-strong);
+      background: var(--surface-2);
+      transform: translateY(-2px);
+    }
+
+    .card-top-row {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .card-top-row h4 {
+      font-family: var(--font-display);
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-1);
+      line-height: 1.3;
+    }
+
+    .danger-badge {
+      flex-shrink: 0;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 4px 8px;
+      border-radius: 6px;
+    }
+
+    .danger-low {
+      color: var(--safe);
+      background: rgba(79, 209, 165, 0.1);
+      border: 1px solid rgba(79, 209, 165, 0.25);
+    }
+
+    .danger-medium {
+      color: var(--attention);
+      background: rgba(232, 182, 87, 0.1);
+      border: 1px solid rgba(232, 182, 87, 0.25);
+    }
+
+    .danger-high {
+      color: var(--risk);
+      background: rgba(239, 106, 106, 0.1);
+      border: 1px solid rgba(239, 106, 106, 0.25);
+    }
+
+    .meta-stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px 0;
+    }
+
+    .meta-stat-cell {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .meta-stat-cell .stat-lbl {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-3);
+    }
+
+    .meta-stat-cell .stat-val {
+      font-size: 13.5px;
+      color: var(--text-2);
+      font-weight: 500;
+    }
+
+    .card-note-footer {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-top: 1px solid var(--hairline);
+      padding-top: 14px;
+      font-size: 12px;
+      color: var(--text-3);
+    }
+
+    .card-note-footer svg {
+      flex-shrink: 0;
+    }
+
+    /* ----------------------------------------------------
+     TAB 4: 🔎 SEARCH OBJECT
+  ---------------------------------------------------- */
+    .search-hero-box {
+      text-align: center;
+      padding: 64px 20px 36px;
+      max-width: 620px;
+      margin: 0 auto;
+    }
+
+    .search-hero-box h1 {
+      font-family: var(--font-display);
+      font-size: clamp(26px, 4vw, 36px);
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      color: var(--text-1);
+      margin-bottom: 12px;
+    }
+
+    .search-hero-box p {
+      font-size: 15px;
+      color: var(--text-2);
+      line-height: 1.6;
+    }
+
+    .search-input-wrapper {
+      max-width: 700px;
+      margin: 32px auto 0;
+      position: relative;
+    }
+
+    .main-search-input {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--hairline-strong);
+      border-radius: 14px;
+      padding: 16px 56px 16px 22px;
+      font-family: var(--font-body);
+      font-size: 15px;
+      color: var(--text-1);
+      outline: none;
+      transition: border-color .25s var(--ease), box-shadow .25s var(--ease);
+      caret-color: var(--accent);
+    }
+
+    .main-search-input::placeholder {
+      color: var(--text-3);
+    }
+
+    .main-search-input:focus {
+      border-color: var(--accent-line);
+      box-shadow: 0 0 0 3px var(--accent-dim);
+    }
+
+    .search-icon-btn {
+      position: absolute;
+      right: 18px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-3);
+      pointer-events: none;
+    }
+
+    .quick-search-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: center;
+      margin: 18px auto 0;
+      max-width: 700px;
+    }
+
+    .quick-tag {
+      padding: 6px 14px;
+      border-radius: 99px;
+      font-size: 12px;
+      font-weight: 600;
+      border: 1px solid var(--hairline);
+      color: var(--text-2);
+      background: var(--surface);
+      cursor: pointer;
+      font-family: var(--font-body);
+      transition: all .2s var(--ease);
+    }
+
+    .quick-tag:hover {
+      border-color: var(--hairline-strong);
+      color: var(--text-1);
+      background: var(--surface-2);
+    }
+
+    .search-results-section {
+      max-width: 700px;
+      margin: 36px auto 0;
+      padding-bottom: 60px;
+    }
+
+    .results-header-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-3);
+      margin-bottom: 14px;
+    }
+
+    .result-item-card {
+      background: var(--surface);
+      border: 1px solid var(--hairline);
+      border-radius: 12px;
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 10px;
+      cursor: pointer;
+      transition: background .2s var(--ease), border-color .2s var(--ease), transform .2s var(--ease);
+    }
+
+    .result-item-card:hover {
+      background: var(--surface-2);
+      border-color: var(--hairline-strong);
+      transform: translateX(3px);
+    }
+
+    .result-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+      background: var(--surface-2);
+      border: 1px solid var(--hairline);
+    }
+
+    .result-text {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .result-text .res-title {
+      font-size: 14.5px;
+      font-weight: 600;
+      color: var(--text-1);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .result-text .res-meta {
+      font-size: 12px;
+      color: var(--text-3);
+      margin-top: 3px;
+    }
+
+    .result-action-arrow {
+      color: var(--text-3);
+      flex-shrink: 0;
+    }
+
+    .empty-search-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-3);
+    }
+
+    .empty-search-state .empty-icon {
+      font-size: 42px;
+      margin-bottom: 16px;
+    }
+
+    .empty-search-state h3 {
+      font-family: var(--font-display);
+      font-size: 17px;
+      font-weight: 600;
+      color: var(--text-2);
+      margin-bottom: 8px;
+    }
+
+    .empty-search-state p {
+      font-size: 13.5px;
+      line-height: 1.6;
+    }
+
+    /* ----------------------------------------------------
+     RESPONSIVE BREAKPOINTS
+  ---------------------------------------------------- */
+    @media (max-width: 860px) {
+      .explore-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        position: relative;
+        top: 0;
+        height: auto;
+        flex-direction: row;
+        overflow-x: auto;
+        overflow-y: visible;
+        border-right: none;
+        border-bottom: 1px solid var(--hairline);
+        padding: 0;
+        gap: 0;
+      }
+
+      .sidebar-section-title,
+      .sidebar-divider {
+        display: none;
+      }
+
+      .sidebar-link {
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+        padding: 14px 18px;
+        border-left: none;
+        border-bottom: 3px solid transparent;
+        font-size: 11px;
+        white-space: nowrap;
+      }
+
+      .sidebar-link .nav-icon {
+        font-size: 20px;
+      }
+
+      .sidebar-link.active {
+        background: transparent;
+        border-bottom-color: var(--accent);
+      }
+
+      .sidebar-link .badge {
+        position: absolute;
+        top: 6px;
+        right: 6px;
+        margin: 0;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .panel-header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .data-table thead th:nth-child(n+5),
+      .data-table tbody td:nth-child(n+5) {
+        display: none;
+      }
+
+      .debris-grid-cards {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="grain"></div>
+
+  <!-- ============================================================
+     HEADER NAVIGATION
+============================================================ -->
+  <header id="header">
+    <a class="brand" href="home.html"><span class="mark">✦</span> ORBITAL</a>
+    <nav class="links">
+      <a href="home.html">Home</a>
+      <a href="explore.html" class="active">Explore</a>
+      <a href="#monitor">Monitor</a>
+      <a href="#analytics">Analytics</a>
+    </nav>
+    <div class="nav-right">
+      <div class="notif-wrapper" id="notif-wrapper">
+        <button class="icon-btn notif-btn" id="notif-btn" aria-label="Notifications" aria-expanded="false">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+            <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
+            <path d="M13.7 21a2 2 0 0 1-3.4 0" />
+          </svg>
+          <span class="notif-badge" id="notif-badge">3</span>
+        </button>
+
+        <!-- Notification Panel Flyout -->
+        <div class="notif-dropdown" id="notif-dropdown">
+          <div class="notif-header">
+            <div class="notif-header-title">
+              <h4>Orbital Alerts</h4>
+              <span class="notif-unread-count" id="notif-unread-count">3 unread</span>
+            </div>
+            <button class="notif-mark-read" id="notif-mark-read" title="Mark all as read">Mark all read</button>
+          </div>
+
+          <div class="notif-tabs">
+            <button class="notif-tab active" data-filter="all">All</button>
+            <button class="notif-tab" data-filter="conjunctions">Conjunctions</button>
+            <button class="notif-tab" data-filter="system">System</button>
+          </div>
+
+          <div class="notif-list" id="notif-list">
+            <!-- Notification Item 1: Critical Conjunction -->
+            <div class="notif-item unread" data-category="conjunctions">
+              <div class="notif-icon notif-risk">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                  <line x1="12" y1="9" x2="12" y2="13" />
+                  <line x1="12" y1="17" x2="12.01" y2="17" />
+                </svg>
+              </div>
+              <div class="notif-content">
+                <div class="notif-title-row">
+                  <span class="notif-title">High-Risk Conjunction Alert</span>
+                  <span class="notif-time">14m ago</span>
+                </div>
+                <p class="notif-desc"><strong style="color:var(--text-1)">COSMOS 1408 DEB</strong> predicted within 3.2
+                  km of <strong style="color:var(--accent)">ISS (ZARYA)</strong> in 18h.</p>
+                <div class="notif-meta-tags">
+                  <span class="notif-tag tag-risk">Pc: 4.8e-4</span>
+                  <span class="notif-tag">LEO (418 km)</span>
+                </div>
+              </div>
+              <span class="unread-dot"></span>
+            </div>
+
+            <!-- Notification Item 2: Solar Activity -->
+            <div class="notif-item unread" data-category="system">
+              <div class="notif-icon notif-attention">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="5" />
+                  <line x1="12" y1="1" x2="12" y2="3" />
+                  <line x1="12" y1="21" x2="12" y2="23" />
+                  <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+                  <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+                  <line x1="1" y1="12" x2="3" y2="12" />
+                  <line x1="21" y1="12" x2="23" y2="12" />
+                  <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+                  <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+                </svg>
+              </div>
+              <div class="notif-content">
+                <div class="notif-title-row">
+                  <span class="notif-title">Space Weather Geomagnetic Storm</span>
+                  <span class="notif-time">1h ago</span>
+                </div>
+                <p class="notif-desc">G2-class coronal mass ejection impacting upper atmospheric density; orbital decay
+                  acceleration elevated.</p>
+                <div class="notif-meta-tags">
+                  <span class="notif-tag tag-attention">Kp Index: 6.2</span>
+                  <span class="notif-tag">Atmospheric Drag</span>
+                </div>
+              </div>
+              <span class="unread-dot"></span>
+            </div>
+
+            <!-- Notification Item 3: Maneuver Completed -->
+            <div class="notif-item unread" data-category="conjunctions">
+              <div class="notif-icon notif-safe">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10" />
+                  <path d="m9 12 2 2 4-4" />
+                </svg>
+              </div>
+              <div class="notif-content">
+                <div class="notif-title-row">
+                  <span class="notif-title">Collision Avoidance Burn Executed</span>
+                  <span class="notif-time">3h ago</span>
+                </div>
+                <p class="notif-desc"><strong style="color:var(--text-1)">STARLINK-3021</strong> performed autonomous
+                  delta-V burn (+1.2 m/s); miss distance increased to 12.8 km.</p>
+                <div class="notif-meta-tags">
+                  <span class="notif-tag tag-safe">Safe Clearance</span>
+                  <span class="notif-tag">Delta-V: +1.2 m/s</span>
+                </div>
+              </div>
+              <span class="unread-dot"></span>
+            </div>
+
+            <!-- Notification Item 4: New Catalog Ingestion (Read) -->
+            <div class="notif-item" data-category="system">
+              <div class="notif-icon notif-accent">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="3" />
+                  <path
+                    d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+                </svg>
+              </div>
+              <div class="notif-content">
+                <div class="notif-title-row">
+                  <span class="notif-title">Catalog TLE Bulk Synchronization</span>
+                  <span class="notif-time">6h ago</span>
+                </div>
+                <p class="notif-desc">Propagated 12,482 state vectors from 18th Space Defense Squadron feed. 14 new
+                  fragmentation pieces cataloged.</p>
+                <div class="notif-meta-tags">
+                  <span class="notif-tag">Epoch: 2026.238</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="notif-footer">
+            <a href="explore.html" class="notif-footer-link">Explore Conjunction Monitor →</a>
+          </div>
+        </div>
+      </div>
+      <div class="avatar">JS</div>
+    </div>
+  </header>
+
+  <!-- ============================================================
+     EXPLORE MAIN LAYOUT
+============================================================ -->
+  <div class="explore-layout">
+
+    <!-- Sidebar Tabs Navigation -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-section-title">Explore</div>
+      <button class="sidebar-link active" data-tab="orbital-map">
+        <span class="nav-icon">🌍</span>
+        Orbital Map
+      </button>
+      <button class="sidebar-link" data-tab="satellites">
+        <span class="nav-icon">🛰️</span>
+        Satellites
+        <span class="badge">8,061</span>
+      </button>
+      <button class="sidebar-link" data-tab="debris">
+        <span class="nav-icon">☄️</span>
+        Debris
+        <span class="badge">4,421</span>
+      </button>
+      <div class="sidebar-divider"></div>
+      <button class="sidebar-link" data-tab="search">
+        <span class="nav-icon">🔎</span>
+        Search Object
+      </button>
+    </aside>
+
+    <!-- Content Panels -->
+    <main class="explore-main">
+
+      <!-- ==========================================
+         PANEL 1: 🌍 ORBITAL MAP (CESIUM ION)
+    =========================================== -->
+      <div class="tab-panel active" id="panel-orbital-map">
+        <div class="map-wrap">
+          <!-- Cesium Container replaces canvas -->
+          <div id="cesiumContainer"></div>
+          <div class="map-vignette"></div>
+
+          <!-- Top Toolbar -->
+          <div class="map-toolbar">
+            <div class="map-title-card">
+              <h2>Orbital Environment (Cesium Ion)</h2>
+              <span class="live-indicator"><span class="live-dot"></span> Live Feed</span>
+            </div>
+
+            <div class="map-controls">
+              <button class="map-toggle-btn active" id="toggle-satellites">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                  <circle cx="12" cy="12" r="3" />
+                  <path d="M6 12a6 6 0 1 0 12 0 6 6 0 0 0-12 0" />
+                  <path d="M3 3l4 4m10 10 4 4M3 21l4-4M17 7l4-4" />
+                </svg>
+                Satellites
+              </button>
+              <button class="map-toggle-btn active" id="toggle-debris">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                  <circle cx="5" cy="5" r="2" />
+                  <circle cx="19" cy="7" r="1" />
+                  <circle cx="14" cy="18" r="1.5" />
+                  <circle cx="8" cy="17" r="1" />
+                  <circle cx="18" cy="14" r="2" />
+                </svg>
+                Debris
+              </button>
+              <button class="map-toggle-btn" id="toggle-approaches">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                  <path d="M6 18 18 6M8 6h10v10" />
+                </svg>
+                Close Approaches
+              </button>
+              <button class="map-toggle-btn active" id="toggle-orbits">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                  <ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(-30 12 12)" />
+                </svg>
+                Orbit Rings
+              </button>
+            </div>
+          </div>
+
+          <!-- Legend Overlay -->
+          <div class="map-legend">
+            <div class="legend-item"><span class="legend-color"
+                style="background:var(--accent);box-shadow:0 0 8px var(--accent)"></span> Active Satellites</div>
+            <div class="legend-item"><span class="legend-color" style="background:var(--text-3)"></span> Debris
+              Fragments</div>
+            <div class="legend-item"><span class="legend-color"
+                style="background:var(--attention);box-shadow:0 0 8px var(--attention)"></span> Proximity Alerts</div>
+            <div class="legend-item"><span class="legend-color" style="background:var(--risk)"></span> High Decay Risk
+            </div>
+          </div>
+
+          <!-- Telemetry HUD -->
+          <div class="map-hud">
+            <div class="hud-card">
+              <span class="hud-title">Tracked Objects</span>
+              <span class="hud-value">12,482</span>
+            </div>
+            <div class="hud-card">
+              <span class="hud-title">Close Encounters</span>
+              <span class="hud-value">34</span>
+            </div>
+            <div class="hud-card">
+              <span class="hud-title">UTC Time</span>
+              <span class="hud-value" id="hud-clock">--:--:-- UTC</span>
+            </div>
+          </div>
+
+          <!-- Hover Popover -->
+          <div id="map-popover" class="map-popover">
+            <div class="mp-badge mp-badge-sat">Satellite</div>
+            <div class="mp-name">—</div>
+            <div class="mp-row"><span>NORAD ID</span><span>—</span></div>
+            <div class="mp-row"><span>Altitude</span><span>—</span></div>
+            <div class="mp-row"><span>Velocity</span><span>—</span></div>
+            <div class="mp-row"><span>Status</span><span>—</span></div>
+            <div class="mp-row"><span>Regime</span><span>—</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==========================================
+         PANEL 2: 🛰️ SATELLITES
+    =========================================== -->
+      <div class="tab-panel" id="panel-satellites">
+        <div class="panel-container">
+          <div class="panel-header">
+            <div>
+              <div class="eyebrow" style="margin-bottom:10px;">Catalog Registry</div>
+              <h1>Tracked Satellites</h1>
+              <p>Active constellations, meteorological platforms, scientific probes, and retired payloads currently
+                cataloged in orbit.</p>
+            </div>
+          </div>
+
+          <!-- Filter Bar -->
+          <div class="filters-row">
+            <button class="filter-pill active">All (8,061)</button>
+            <button class="filter-pill">Active</button>
+            <button class="filter-pill">Inactive</button>
+            <button class="filter-pill">LEO (< 2,000 km)</button>
+                <button class="filter-pill">MEO</button>
+                <button class="filter-pill">GEO (35,786 km)</button>
+                <div class="filter-spacer"></div>
+                <span class="total-count-pill">Displaying 12 of 8,061</span>
+          </div>
+
+          <!-- Table -->
+          <div class="table-card">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Designation / Name</th>
+                  <th>NORAD ID</th>
+                  <th>Orbit Regime</th>
+                  <th>Altitude</th>
+                  <th>Velocity</th>
+                  <th>Inclination</th>
+                  <th>Operational Status</th>
+                </tr>
+              </thead>
+              <tbody id="satellite-table-body">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+
+          <div class="load-more-container">
+            <button class="btn-load" id="btn-load-sats">
+              Load Next 50 Satellites
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 5v14M5 12l7 7 7-7" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==========================================
+         PANEL 3: ☄️ DEBRIS
+    =========================================== -->
+      <div class="tab-panel" id="panel-debris">
+        <div class="panel-container">
+          <div class="panel-header">
+            <div>
+              <div class="eyebrow" style="margin-bottom:10px;">Congestion & Hazard</div>
+              <h1>Space Debris & Fragments</h1>
+              <p>Discharged upper stages, fragmentation remnants, and defunct payloads tracked to mitigate catastrophic
+                orbital collisions.</p>
+            </div>
+            <span class="total-count-pill">4,421 Tracked Fragments</span>
+          </div>
+
+          <!-- Alert Notification -->
+          <div class="notice-banner">
+            <svg class="banner-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="2">
+              <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+              <line x1="12" y1="9" x2="12" y2="13" />
+              <line x1="12" y1="17" x2="12.01" y2="17" />
+            </svg>
+            <div>
+              <div class="banner-heading">3 Conjunction Screening Warnings in Next 24 Hours</div>
+              <div class="banner-desc">Propagated orbits indicate close approach thresholds (< 5.0 km) with active
+                  constellations. Automated screening runs every 90 minutes.</div>
+              </div>
+            </div>
+
+            <!-- Filter Chips -->
+            <div class="filters-row" style="margin-bottom:28px;">
+              <button class="filter-pill active">All Debris</button>
+              <button class="filter-pill">High Risk (Collision)</button>
+              <button class="filter-pill">Medium Risk</button>
+              <button class="filter-pill">Low Risk</button>
+              <button class="filter-pill">Rocket Bodies (R/B)</button>
+              <button class="filter-pill">Fragmentation Clouds</button>
+            </div>
+
+            <!-- Cards Grid -->
+            <div class="debris-grid-cards" id="debris-cards-grid">
+              <!-- Dynamically populated -->
+            </div>
+
+            <div class="load-more-container">
+              <button class="btn-load" id="btn-load-debris">
+                Load More Tracked Fragments
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 5v14M5 12l7 7 7-7" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ==========================================
+         PANEL 4: 🔎 SEARCH OBJECT
+    =========================================== -->
+        <div class="tab-panel" id="panel-search">
+          <div class="search-hero-box">
+            <div class="eyebrow" style="margin-bottom:14px;">Instant Catalog Query</div>
+            <h1>Search the Orbital Database</h1>
+            <p>Query over 12,480 cataloged spacecraft, debris remnants, and rocket bodies by common designation, NORAD
+              identifier, or COSPAR ID.</p>
+
+            <div class="search-input-wrapper">
+              <input type="text" class="main-search-input" id="object-search-input"
+                placeholder="Search by satellite name, NORAD ID (e.g. 25544), or mission..." autocomplete="off"
+                spellcheck="false" />
+              <svg class="search-icon-btn" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2">
+                <circle cx="11" cy="11" r="8" />
+                <path d="m21 21-4.35-4.35" />
+              </svg>
+            </div>
+
+            <div class="quick-search-tags">
+              <button class="quick-tag" data-query="ISS">🛸 ISS (Zarya)</button>
+              <button class="quick-tag" data-query="Hubble">🔭 Hubble Space Telescope</button>
+              <button class="quick-tag" data-query="Starlink">🌐 Starlink Fleet</button>
+              <button class="quick-tag" data-query="NOAA">🌦 NOAA-19</button>
+              <button class="quick-tag" data-query="GPS">📡 GPS Constellation</button>
+              <button class="quick-tag" data-query="Cosmos">☄️ Cosmos 1408</button>
+              <button class="quick-tag" data-query="Fengyun">🚀 Fengyun 1C</button>
+            </div>
+          </div>
+
+          <div class="search-results-section">
+            <div class="results-header-label" id="results-label">Recently Queried Objects</div>
+            <div id="search-items-container">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+        </div>
+
+    </main>
+  </div>
+
+  <!-- ============================================================
+     JAVASCRIPT LOGIC
+============================================================ -->
+  <script>
+    /* ---- Navbar Scrolled State ---- */
+    const header = document.getElementById('header');
+    window.addEventListener('scroll', () => {
+      header.classList.toggle('scrolled', window.scrollY > 12);
+    }, { passive: true });
+
+    /* ---- Live UTC Clock in HUD ---- */
+    function updateClock() {
+      const el = document.getElementById('hud-clock');
+      if (!el) return;
+      const now = new Date();
+      el.textContent = now.toUTCString().slice(17, 25) + ' UTC';
+    }
+    updateClock();
+    setInterval(updateClock, 1000);
+
+    /* ---- Tab Switching ---- */
+    const sidebarLinks = document.querySelectorAll('.sidebar-link');
+    const tabPanels = document.querySelectorAll('.tab-panel');
+    const PANEL_MAP = {
+      'orbital-map': 'panel-orbital-map',
+      'satellites': 'panel-satellites',
+      'debris': 'panel-debris',
+      'search': 'panel-search',
+    };
+
+    function activateTab(tabId) {
+      sidebarLinks.forEach(link => link.classList.toggle('active', link.dataset.tab === tabId));
+      tabPanels.forEach(panel => panel.classList.toggle('active', panel.id === PANEL_MAP[tabId]));
+      if (tabId === 'orbital-map' && !mapInitialized) {
+        initCesiumMap();
+      }
+    }
+
+    sidebarLinks.forEach(link => {
+      link.addEventListener('click', () => activateTab(link.dataset.tab));
+    });
+
+    /* ---- Filter Pills Generic Active Handler ---- */
+    document.querySelectorAll('.filters-row').forEach(row => {
+      row.querySelectorAll('.filter-pill').forEach(pill => {
+        pill.addEventListener('click', () => {
+          row.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+          pill.classList.add('active');
+        });
+      });
+    });
+
+    /* ============================================================
+       SATELLITE DATA & RENDERING
+    ============================================================ */
+    const SATELLITE_DATA = [
+      { name: 'ISS (ZARYA)', norad: '25544', orbit: 'LEO', alt: '418 km', vel: '7.66 km/s', incl: '51.6°', status: 'active' },
+      { name: 'HUBBLE SPACE TEL', norad: '20580', orbit: 'LEO', alt: '547 km', vel: '7.59 km/s', incl: '28.5°', status: 'active' },
+      { name: 'STARLINK-3021', norad: '49728', orbit: 'LEO', alt: '550 km', vel: '7.59 km/s', incl: '53.0°', status: 'active' },
+      { name: 'NOAA-19', norad: '33591', orbit: 'LEO', alt: '870 km', vel: '7.44 km/s', incl: '99.1°', status: 'active' },
+      { name: 'GPS BIIA-10', norad: '20724', orbit: 'MEO', alt: '20,200 km', vel: '3.87 km/s', incl: '55.0°', status: 'active' },
+      { name: 'INTELSAT 30', norad: '40424', orbit: 'GEO', alt: '35,786 km', vel: '3.07 km/s', incl: '0.1°', status: 'active' },
+      { name: 'TERRA (EOS AM-1)', norad: '25994', orbit: 'LEO', alt: '705 km', vel: '7.50 km/s', incl: '98.2°', status: 'active' },
+      { name: 'AQUA (EOS PM-1)', norad: '27424', orbit: 'LEO', alt: '705 km', vel: '7.50 km/s', incl: '98.2°', status: 'active' },
+      { name: 'SENTINEL-1A', norad: '39634', orbit: 'LEO', alt: '693 km', vel: '7.51 km/s', incl: '98.2°', status: 'active' },
+      { name: 'LANDSAT 8', norad: '39084', orbit: 'LEO', alt: '705 km', vel: '7.50 km/s', incl: '98.2°', status: 'active' },
+      { name: 'COSMOS 2251', norad: '22675', orbit: 'LEO', alt: 'Decayed', vel: '—', incl: '74.0°', status: 'inactive' },
+      { name: 'FENGYUN 1C', norad: '29677', orbit: 'LEO', alt: '820 km', vel: '7.46 km/s', incl: '98.8°', status: 'attention' },
+    ];
+
+    function getStatusBadge(status) {
+      if (status === 'active') return '<span class="status-badge status-active">Active</span>';
+      if (status === 'inactive') return '<span class="status-badge status-inactive">Inactive / Decayed</span>';
+      return '<span class="status-badge status-attention">Proximity Warning</span>';
+    }
+
+    function getOrbitChip(orbit) {
+      return '<span class="orbit-chip ' + orbit.toLowerCase() + '">' + orbit + '</span>';
+    }
+
+    function renderSatelliteTable(data) {
+      const tbody = document.getElementById('satellite-table-body');
+      tbody.innerHTML = data.map(sat => `
+        <tr>
+          <td class="primary-cell">${sat.name}</td>
+          <td style="font-size:12px;color:var(--text-3);font-variant-numeric:tabular-nums">${sat.norad}</td>
+          <td>${getOrbitChip(sat.orbit)}</td>
+          <td>${sat.alt}</td>
+          <td>${sat.vel}</td>
+          <td>${sat.incl}</td>
+          <td>${getStatusBadge(sat.status)}</td>
+        </tr>
+      `).join('');
+    }
+    renderSatelliteTable(SATELLITE_DATA);
+
+    document.getElementById('btn-load-sats').addEventListener('click', function () {
+      this.textContent = 'All 8,061 Records Indexed';
+      this.disabled = true;
+      this.style.opacity = '0.5';
+    });
+
+    /* ============================================================
+       DEBRIS DATA & RENDERING
+    ============================================================ */
+    const DEBRIS_DATA = [
+      { name: 'COSMOS 1408 DEB', norad: '49700', risk: 'high', alt: '480 km', size: '~1.1 m', orbit: 'LEO', note: 'Predicted close approach within 3.2 km of ISS within 18 hours' },
+      { name: 'FENGYUN 1C DEB', norad: '29677', risk: 'high', alt: '820 km', size: '~0.6 m', orbit: 'LEO', note: 'Dense fragmentation cloud remnant with 2,800+ tracked shards' },
+      { name: 'SL-16 R/B (STAGE)', norad: '19650', risk: 'medium', alt: '860 km', size: '~9.2 m', orbit: 'LEO', note: 'Spent heavy rocket body — elevated long-term conjunction risk' },
+      { name: 'BREEZE-M DEB', norad: '33766', risk: 'medium', alt: '1,480 km', size: '~2.0 m', orbit: 'LEO', note: 'Propellant tank fragment — tumbling with variable radar cross-section' },
+      { name: 'IRIDIUM 33 DEB', norad: '33783', risk: 'medium', alt: '775 km', size: '~1.3 m', orbit: 'LEO', note: '2009 hypervelocity collision shard — gradual natural decay' },
+      { name: 'DELTA 1 DEB', norad: '06073', risk: 'low', alt: '3,700 km', size: '< 0.1 m', orbit: 'MEO', note: 'Small high-altitude fragment in stable propagation regime' },
+      { name: 'SL-3 R/B', norad: '00089', risk: 'low', alt: '490 km', size: '~8.0 m', orbit: 'LEO', note: 'Historic booster stage nearing atmospheric re-entry window' },
+      { name: 'COSMOS 2251 DEB', norad: '33500', risk: 'low', alt: '810 km', size: '~0.3 m', orbit: 'LEO', note: 'Collision remnant in stable near-circular polar orbit' },
+    ];
+
+    function renderDebrisCards(data) {
+      const container = document.getElementById('debris-cards-grid');
+      container.innerHTML = data.map(d => `
+        <div class="debris-item-card">
+          <div class="card-top-row">
+            <h4>${d.name}</h4>
+            <span class="danger-badge danger-${d.risk}">${d.risk.charAt(0).toUpperCase() + d.risk.slice(1)} Risk</span>
+          </div>
+          <div class="meta-stats-grid">
+            <div class="meta-stat-cell">
+              <span class="stat-lbl">NORAD ID</span>
+              <span class="stat-val">${d.norad}</span>
+            </div>
+            <div class="meta-stat-cell">
+              <span class="stat-lbl">Altitude</span>
+              <span class="stat-val">${d.alt}</span>
+            </div>
+            <div class="meta-stat-cell">
+              <span class="stat-lbl">Est. Size</span>
+              <span class="stat-val">${d.size}</span>
+            </div>
+            <div class="meta-stat-cell">
+              <span class="stat-lbl">Regime</span>
+              <span class="stat-val">${d.orbit}</span>
+            </div>
+          </div>
+          <div class="card-note-footer">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+            ${d.note}
+          </div>
+        </div>
+      `).join('');
+    }
+    renderDebrisCards(DEBRIS_DATA);
+
+    document.getElementById('btn-load-debris').addEventListener('click', function () {
+      this.textContent = 'All 4,421 Fragments Displayed';
+      this.disabled = true;
+      this.style.opacity = '0.5';
+    });
+
+    /* ============================================================
+       SEARCH OBJECT FUNCTIONALITY
+    ============================================================ */
+    const SEARCH_DATABASE = [
+      { icon: '🛸', name: 'ISS (ZARYA)', meta: 'NORAD 25544 · LEO · Active Space Station' },
+      { icon: '🔭', name: 'Hubble Space Telescope', meta: 'NORAD 20580 · LEO · Active Observatory' },
+      { icon: '🌐', name: 'STARLINK-3021', meta: 'NORAD 49728 · LEO · Active Communications' },
+      { icon: '☄️', name: 'COSMOS 1408 DEB', meta: 'NORAD 49700 · LEO · High Conjunction Risk' },
+      { icon: '🌦', name: 'NOAA-19', meta: 'NORAD 33591 · LEO · Weather Observation' },
+      { icon: '🚀', name: 'FENGYUN 1C DEB', meta: 'NORAD 29677 · LEO · High Risk Debris' },
+      { icon: '📡', name: 'GPS BIIA-10', meta: 'NORAD 20724 · MEO · Global Positioning' },
+      { icon: '📡', name: 'INTELSAT 30', meta: 'NORAD 40424 · GEO · Geostationary Comms' },
+      { icon: '🛰️', name: 'TERRA (EOS AM-1)', meta: 'NORAD 25994 · LEO · Active Earth Science' },
+      { icon: '🛰️', name: 'SENTINEL-1A', meta: 'NORAD 39634 · LEO · Radar Earth Imaging' },
+      { icon: '☄️', name: 'IRIDIUM 33 DEB', meta: 'NORAD 33783 · LEO · Medium Risk Debris' },
+    ];
+
+    const RECENT_QUERIES = SEARCH_DATABASE.slice(0, 5);
+
+    function renderSearchResults(items, title) {
+      const label = document.getElementById('results-label');
+      const list = document.getElementById('search-items-container');
+      if (title) label.textContent = title;
+
+      if (!items.length) {
+        list.innerHTML = `
+          <div class="empty-search-state">
+            <div class="empty-icon">🔭</div>
+            <h3>No Matching Objects Found</h3>
+            <p>Check the designation or NORAD ID. The catalog contains 12,482 active records.</p>
+          </div>`;
+        return;
+      }
+
+      list.innerHTML = items.map(item => `
+        <div class="result-item-card">
+          <div class="result-avatar">${item.icon}</div>
+          <div class="result-text">
+            <div class="res-title">${item.name}</div>
+            <div class="res-meta">${item.meta}</div>
+          </div>
+          <svg class="result-action-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+        </div>
+      `).join('');
+    }
+    renderSearchResults(RECENT_QUERIES, 'Recently Queried Objects');
+
+    const searchInput = document.getElementById('object-search-input');
+    let searchDebounce;
+    searchInput.addEventListener('input', function () {
+      clearTimeout(searchDebounce);
+      const q = this.value.trim().toLowerCase();
+      searchDebounce = setTimeout(() => {
+        if (!q) {
+          renderSearchResults(RECENT_QUERIES, 'Recently Queried Objects');
+          return;
+        }
+        const filtered = SEARCH_DATABASE.filter(item =>
+          item.name.toLowerCase().includes(q) || item.meta.toLowerCase().includes(q)
+        );
+        renderSearchResults(filtered, 'Results matching "' + searchInput.value.trim() + '" (' + filtered.length + ')');
+      }, 180);
+    });
+
+    document.querySelectorAll('.quick-tag').forEach(tag => {
+      tag.addEventListener('click', () => {
+        searchInput.value = tag.dataset.query;
+        searchInput.dispatchEvent(new Event('input'));
+        activateTab('search');
+      });
+    });
+
+    /* ============================================================
+       CESIUM ION ORBITAL MAP SCENE
+    ============================================================ */
+    Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJub25jZSI6IlN2U19RcG95RWZKal9PaWMiLCJqdGkiOiI4MjI0MjFlYi1iMDVkLTRiM2EtYTdmYi1jYzg2Yzg5ZTM4YzEiLCJpZCI6NDczMDc0LCJpc3MiOiJodHRwczovL2FwaS5jZXNpdW0uY29tIiwiYXVkIjoidW5kZWZpbmVkX2RlZmF1bHQiLCJpYXQiOjE3ODc3ODAzNjZ9.dxizrouvUqHP-fpn-uJnow8DK6sRg0eJj0XPL5Os8Ws';
+
+    let mapInitialized = false;
+    let viewer = null;
+
+    let satelliteEntities = [];
+    let debrisEntities = [];
+    let orbitPathEntities = [];
+    let approachEntities = [];
+
+    // Tracked orbital entities
+    const ORBITAL_OBJECTS = [
+      { name: 'ISS (ZARYA)', norad: '25544', altKm: 418, incDeg: 51.6, raan: 0.2, speed: 0.08, status: 'ACTIVE', orbit: 'LEO', type: 'satellite' },
+      { name: 'HUBBLE SPACE TEL', norad: '20580', altKm: 547, incDeg: 28.5, raan: 1.6, speed: 0.07, status: 'ACTIVE', orbit: 'LEO', type: 'satellite' },
+      { name: 'STARLINK-3021', norad: '49728', altKm: 550, incDeg: 53.0, raan: 3.1, speed: 0.075, status: 'ACTIVE', orbit: 'LEO', type: 'satellite' },
+      { name: 'NOAA-19', norad: '33591', altKm: 870, incDeg: 99.1, raan: 4.5, speed: 0.065, status: 'ACTIVE', orbit: 'LEO', type: 'satellite' },
+      { name: 'SENTINEL-1A', norad: '39634', altKm: 693, incDeg: 98.2, raan: 5.2, speed: 0.068, status: 'ACTIVE', orbit: 'LEO', type: 'satellite' },
+      { name: 'COSMOS 2251 DEB', norad: '22675', altKm: 810, incDeg: 74.0, raan: 2.3, speed: 0.055, status: 'INACTIVE', orbit: 'LEO', type: 'debris' },
+    ];
+
+    // Helper: calculate 3D position along inclined orbit
+    function calculateOrbitalPosition(altMeters, incRadians, raanRadians, trueAnomalyRadians) {
+      const earthRadius = 6378137.0;
+      const r = earthRadius + altMeters;
+
+      // Position in orbital plane
+      const xPlane = r * Math.cos(trueAnomalyRadians);
+      const yPlane = r * Math.sin(trueAnomalyRadians);
+
+      // Rotate by inclination and RAAN
+      const x = xPlane * Math.cos(raanRadians) - yPlane * Math.cos(incRadians) * Math.sin(raanRadians);
+      const y = xPlane * Math.sin(raanRadians) + yPlane * Math.cos(incRadians) * Math.cos(raanRadians);
+      const z = yPlane * Math.sin(incRadians);
+
+      return new Cesium.Cartesian3(x, y, z);
+    }
+
+    // Generate orbital circle path
+    function generateOrbitPositions(altMeters, incRadians, raanRadians, steps = 90) {
+      const positions = [];
+      for (let i = 0; i <= steps; i++) {
+        const angle = (i / steps) * Math.PI * 2;
+        positions.push(calculateOrbitalPosition(altMeters, incRadians, raanRadians, angle));
+      }
+      return positions;
+    }
+
+    async function initCesiumMap() {
+      if (mapInitialized) return;
+      mapInitialized = true;
+
+      try {
+        viewer = new Cesium.Viewer('cesiumContainer', {
+          animation: false,
+          baseLayerPicker: false,
+          fullscreenButton: false,
+          geocoder: false,
+          homeButton: false,
+          infoBox: false,
+          sceneModePicker: false,
+          selectionIndicator: false,
+          timeline: false,
+          navigationHelpButton: false,
+          navigationInstructionsInitiallyVisible: false,
+          scene3DOnly: true,
+          shouldAnimate: true,
+          creditContainer: document.createElement('div'),
+        });
+
+        // Dark Cosmic Aesthetic & Depth Testing
+        viewer.scene.backgroundColor = Cesium.Color.fromCssColorString('#05070c');
+        viewer.scene.globe.baseColor = Cesium.Color.fromCssColorString('#0b0f18');
+        viewer.scene.globe.enableLighting = true;
+        viewer.scene.globe.depthTestAgainstTerrain = true; // Occlude satellites/debris behind the globe
+        if (viewer.scene.skyAtmosphere) {
+          viewer.scene.skyAtmosphere.brightnessShift = -0.15;
+          viewer.scene.skyAtmosphere.saturationShift = -0.1;
+        }
+
+        // Load Cesium Ion Asset 3 (Global Imagery Asset)
+        try {
+          const layer = viewer.imageryLayers.addImageryProvider(
+            await Cesium.IonImageryProvider.fromAssetId(3)
+          );
+        } catch (assetErr) {
+          console.warn('Cesium Ion Asset 3 Notice:', assetErr);
+        }
+
+        // Set initial camera view in orbit
+        viewer.camera.setView({
+          destination: Cesium.Cartesian3.fromDegrees(10.0, 15.0, 22000000.0),
+          orientation: {
+            heading: Cesium.Math.toRadians(0.0),
+            pitch: Cesium.Math.toRadians(-88.0),
+            roll: 0.0
+          }
+        });
+
+        // Create orbital paths, satellites, debris & conjunction lines
+        createOrbitalLayers();
+
+        // Setup interaction & hover popover
+        setupCesiumInteraction();
+
+      } catch (err) {
+        console.error('Error initializing Cesium map:', err);
+      }
+    }
+
+    function createOrbitalLayers() {
+      let startTime = Date.now();
+
+      // 1. Orbital Ring Paths
+      ORBITAL_OBJECTS.forEach(obj => {
+        const altMeters = obj.altKm * 1000.0;
+        const incRad = Cesium.Math.toRadians(obj.incDeg);
+        const ringPositions = generateOrbitPositions(altMeters, incRad, obj.raan);
+
+        const pathEntity = viewer.entities.add({
+          polyline: {
+            positions: ringPositions,
+            width: 1.5,
+            material: new Cesium.ColorMaterialProperty(
+              Cesium.Color.fromCssColorString('#8fb4ff').withAlpha(0.28)
+            ),
+          }
+        });
+        orbitPathEntities.push(pathEntity);
+      });
+
+      // 2. Satellites
+      ORBITAL_OBJECTS.forEach((obj, idx) => {
+        const altMeters = obj.altKm * 1000.0;
+        const incRad = Cesium.Math.toRadians(obj.incDeg);
+        const baseColor = obj.type === 'debris'
+          ? Cesium.Color.fromCssColorString('#9aa4b8')
+          : (obj.status === 'INACTIVE' ? Cesium.Color.fromCssColorString('#5c6479') : Cesium.Color.fromCssColorString('#8fb4ff'));
+
+        const satEntity = viewer.entities.add({
+          position: new Cesium.CallbackProperty(() => {
+            const elapsed = (Date.now() - startTime) / 1000.0;
+            const currentAnomaly = (idx * 1.2) + (elapsed * obj.speed * 0.4);
+            return calculateOrbitalPosition(altMeters, incRad, obj.raan, currentAnomaly);
+          }, false),
+          point: {
+            pixelSize: obj.type === 'debris' ? 6 : 8,
+            color: baseColor,
+            outlineColor: Cesium.Color.WHITE.withAlpha(0.85),
+            outlineWidth: 1.5
+          }
+        });
+
+        satEntity.userData = {
+          name: obj.name,
+          norad: obj.norad,
+          alt: obj.altKm + ' km',
+          vel: (7.6 - idx * 0.05).toFixed(2) + ' km/s',
+          status: obj.status,
+          orbit: obj.orbit,
+          type: obj.type
+        };
+
+        if (obj.type === 'debris') {
+          debrisEntities.push(satEntity);
+        } else {
+          satelliteEntities.push(satEntity);
+        }
+      });
+
+      // 3. Additional Tracked Debris Particle Cloud
+      const debrisCloudCount = 140;
+      for (let i = 0; i < debrisCloudCount; i++) {
+        const altMeters = (400 + Math.random() * 900) * 1000.0;
+        const incRad = Cesium.Math.toRadians(20 + Math.random() * 80);
+        const raan = Math.random() * Math.PI * 2;
+        const phase = Math.random() * Math.PI * 2;
+        const speed = 0.03 + Math.random() * 0.05;
+
+        const debEntity = viewer.entities.add({
+          position: new Cesium.CallbackProperty(() => {
+            const elapsed = (Date.now() - startTime) / 1000.0;
+            const currentAnomaly = phase + (elapsed * speed * 0.3);
+            return calculateOrbitalPosition(altMeters, incRad, raan, currentAnomaly);
+          }, false),
+          point: {
+            pixelSize: 3,
+            color: Cesium.Color.fromCssColorString('#9aa4b8').withAlpha(0.65)
+          }
+        });
+
+        debEntity.userData = {
+          name: 'DEBRIS FRAGMENT #' + (10000 + i),
+          norad: '' + (40000 + i),
+          alt: Math.round(altMeters / 1000) + ' km',
+          vel: '7.52 km/s',
+          status: 'UNCONTROLLED',
+          orbit: 'LEO',
+          type: 'debris'
+        };
+
+        debrisEntities.push(debEntity);
+      }
+
+      // 4. Conjunction / Close Approach Lines (ISS <-> Cosmos Debris)
+      if (satelliteEntities.length > 0 && debrisEntities.length > 0) {
+        const appLine = viewer.entities.add({
+          polyline: {
+            positions: new Cesium.CallbackProperty(() => {
+              const p1 = satelliteEntities[0].position.getValue(viewer.clock.currentTime);
+              const p2 = debrisEntities[0].position.getValue(viewer.clock.currentTime);
+              if (p1 && p2) return [p1, p2];
+              return [];
+            }, false),
+            width: 1.5,
+            material: new Cesium.PolylineDashMaterialProperty({
+              color: Cesium.Color.fromCssColorString('#e8b657'),
+              dashLength: 12.0
+            })
+          }
+        });
+        appLine.show = false;
+        approachEntities.push(appLine);
+      }
+    }
+
+    function setupCesiumInteraction() {
+      const popover = document.getElementById('map-popover');
+      const wrapper = document.getElementById('cesiumContainer');
+      const handler = new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas);
+
+      let hoveredEntity = null;
+
+      function updatePopover(entity, x, y) {
+        if (!entity || !entity.userData) {
+          popover.classList.remove('show');
+          return;
+        }
+        const data = entity.userData;
+        const badge = popover.querySelector('.mp-badge');
+        badge.textContent = data.type === 'debris' ? 'Space Debris' : 'Active Satellite';
+        badge.className = 'mp-badge ' + (data.type === 'debris' ? 'mp-badge-deb' : 'mp-badge-sat');
+        popover.querySelector('.mp-name').textContent = data.name;
+
+        const rows = popover.querySelectorAll('.mp-row span:last-child');
+        rows[0].textContent = data.norad;
+        rows[1].textContent = data.alt;
+        rows[2].textContent = data.vel;
+        rows[3].textContent = data.status;
+        rows[3].style.color = data.status === 'ACTIVE' ? 'var(--safe)' : 'var(--text-2)';
+        rows[4].textContent = data.orbit;
+
+        const bounds = wrapper.getBoundingClientRect();
+        let left = x - bounds.left + 18;
+        let top = y - bounds.top - 20;
+        if (left + 220 > bounds.width) left = x - bounds.left - 230;
+        popover.style.left = left + 'px';
+        popover.style.top = top + 'px';
+        popover.classList.add('show');
+      }
+
+      handler.setInputAction(movement => {
+        const pickedObject = viewer.scene.pick(movement.endPosition);
+        if (Cesium.defined(pickedObject) && pickedObject.id && pickedObject.id.userData) {
+          hoveredEntity = pickedObject.id;
+          viewer.canvas.style.cursor = 'pointer';
+          updatePopover(hoveredEntity, movement.endPosition.x, movement.endPosition.y);
+        } else {
+          if (hoveredEntity) {
+            hoveredEntity = null;
+            viewer.canvas.style.cursor = 'default';
+            updatePopover(null);
+          }
+        }
+      }, Cesium.ScreenSpaceEventType.MOUSE_MOVE);
+
+      handler.setInputAction(click => {
+        const pickedObject = viewer.scene.pick(click.position);
+        if (Cesium.defined(pickedObject) && pickedObject.id) {
+          updatePopover(pickedObject.id, click.position.x, click.position.y);
+        } else {
+          updatePopover(null);
+        }
+      }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
+
+      // Map Layer Toggles
+      let showSats = true;
+      let showDebris = true;
+      let showApproaches = false;
+      let showOrbits = true;
+
+      document.getElementById('toggle-satellites').addEventListener('click', function () {
+        showSats = !showSats;
+        this.classList.toggle('active', showSats);
+        satelliteEntities.forEach(ent => ent.show = showSats);
+      });
+
+      document.getElementById('toggle-debris').addEventListener('click', function () {
+        showDebris = !showDebris;
+        this.classList.toggle('active', showDebris);
+        debrisEntities.forEach(ent => ent.show = showDebris);
+      });
+
+      document.getElementById('toggle-approaches').addEventListener('click', function () {
+        showApproaches = !showApproaches;
+        this.classList.toggle('active', showApproaches);
+        approachEntities.forEach(ent => ent.show = showApproaches);
+      });
+
+      document.getElementById('toggle-orbits').addEventListener('click', function () {
+        showOrbits = !showOrbits;
+        this.classList.toggle('active', showOrbits);
+        orbitPathEntities.forEach(ent => ent.show = showOrbits);
+      });
+    }
+
+    /* Auto-initialize Cesium Globe on load */
+    initCesiumMap();
+
+    /* ============================================================
+       NOTIFICATION FLYOUT HANDLER
+    ============================================================ */
+    (function initNotifications() {
+      const notifBtn = document.getElementById('notif-btn');
+      const notifDropdown = document.getElementById('notif-dropdown');
+      const notifBadge = document.getElementById('notif-badge');
+      const unreadCount = document.getElementById('notif-unread-count');
+      const markReadBtn = document.getElementById('notif-mark-read');
+      const notifTabs = document.querySelectorAll('.notif-tab');
+      const notifItems = document.querySelectorAll('.notif-item');
+
+      if (!notifBtn || !notifDropdown) return;
+
+      function updateUnreadCount() {
+        const unread = document.querySelectorAll('.notif-item.unread').length;
+        if (unreadCount) unreadCount.textContent = unread + ' unread';
+        if (notifBadge) {
+          if (unread > 0) {
+            notifBadge.textContent = unread;
+            notifBadge.classList.remove('hidden');
+          } else {
+            notifBadge.classList.add('hidden');
+          }
+        }
+      }
+
+      notifBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const isOpen = notifDropdown.classList.toggle('open');
+        notifBtn.setAttribute('aria-expanded', isOpen);
+      });
+
+      document.addEventListener('click', (e) => {
+        if (!notifDropdown.contains(e.target) && !notifBtn.contains(e.target)) {
+          notifDropdown.classList.remove('open');
+          notifBtn.setAttribute('aria-expanded', 'false');
+        }
+      });
+
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          notifDropdown.classList.remove('open');
+          notifBtn.setAttribute('aria-expanded', 'false');
+        }
+      });
+
+      if (markReadBtn) {
+        markReadBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          notifItems.forEach(item => item.classList.remove('unread'));
+          updateUnreadCount();
+        });
+      }
+
+      notifItems.forEach(item => {
+        item.addEventListener('click', () => {
+          item.classList.remove('unread');
+          updateUnreadCount();
+        });
+      });
+
+      notifTabs.forEach(tab => {
+        tab.addEventListener('click', (e) => {
+          e.stopPropagation();
+          notifTabs.forEach(t => t.classList.remove('active'));
+          tab.classList.add('active');
+          const filter = tab.dataset.filter;
+          notifItems.forEach(item => {
+            if (filter === 'all' || item.dataset.category === filter) {
+              item.style.display = 'flex';
+            } else {
+              item.style.display = 'none';
+            }
+          });
+        });
+      });
+    })();
+  </script>
+</body>
+
+</html>
