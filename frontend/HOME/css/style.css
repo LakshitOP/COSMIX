@@ -198,6 +198,472 @@
   @keyframes fadeIn{ to{ opacity:1; } }
   @keyframes pulseLine{ 0%,100%{ opacity:.3;} 50%{opacity:1;} }
 
+  /* CONTRIBUTIONNN */
+#contributors{
+    position: relative;
+    overflow: hidden;
+    padding: 30px 0 70px;
+  }
+  #contributors::before{
+    content:''; position:absolute; inset:0; pointer-events:none;
+    background:
+      radial-gradient(ellipse 70% 50% at 10% 45%, var(--accent-dim) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 45% at 90% 55%, rgba(79,209,165,0.04) 0%, transparent 60%);
+  }
+
+  /* ---- pritLS BANNER ---- */
+  .pritls-banner{
+    display:flex; align-items:center; justify-content:center;
+    gap:4px; margin-bottom:40px; position:relative;
+  }
+  .pritls-banner::after{
+    content:'';
+    position:absolute; bottom:-20px; left:50%; transform:translateX(-50%);
+    width:320px; height:1px;
+    background:linear-gradient(90deg, transparent, var(--hairline-strong), transparent);
+  }
+  .pl-letter{
+    display:flex; flex-direction:column; align-items:center;
+    padding:0 12px; position:relative;
+  }
+  .pl-char{
+    font-family:var(--font-display); font-weight:700;
+    font-size:clamp(38px, 5.5vw, 68px);
+    letter-spacing:-0.035em; line-height:1;
+    color:var(--text-3);
+    transition:color .3s var(--ease), transform .3s var(--ease), text-shadow .3s var(--ease);
+    cursor:default;
+  }
+  .pl-p:hover .pl-char, .pl-l:hover .pl-char{
+    color:var(--accent); text-shadow:0 0 28px var(--accent-line);
+    transform:translateY(-4px) scale(1.07);
+  }
+  .pl-r:hover .pl-char, .pl-i:hover .pl-char{
+    color:var(--safe); text-shadow:0 0 28px rgba(79,209,165,0.35);
+    transform:translateY(-4px) scale(1.07);
+  }
+  .pl-t:hover .pl-char, .pl-s:hover .pl-char{
+    color:var(--attention); text-shadow:0 0 28px rgba(232,182,87,0.35);
+    transform:translateY(-4px) scale(1.07);
+  }
+  .pl-name{
+    font-size:9.5px; font-weight:700; letter-spacing:.13em; text-transform:uppercase;
+    margin-top:10px; opacity:0; transform:translateY(5px);
+    color:var(--text-2);
+    transition:opacity .3s var(--ease), transform .3s var(--ease);
+    white-space:nowrap;
+  }
+  .pl-letter:hover .pl-name{ opacity:1; transform:translateY(0); }
+
+  /* eyebrow + tagline */
+  .crew-head{ text-align:center; margin-bottom:12px; }
+  .crew-head .eyebrow{ display:inline-block; margin-bottom:12px; }
+  .crew-tagline{
+    font-family:var(--font-display); font-weight:500;
+    font-size:clamp(14px,1.6vw,16px); color:var(--text-2);
+  }
+  .crew-tagline em{ color:var(--text-1); font-style:normal; font-weight:600; }
+
+  /* ============================================================
+     ORBITIMAGES — 3D Elliptical Stage with Orbiting Cards
+  ============================================================ */
+  .crew-orbit-stage{
+    position: relative;
+    width: 100%;
+    max-width: 1100px;
+    height: 520px;
+    margin: 20px auto 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .crew-orbit-wrapper{
+    position: relative;
+    width: 1000px;
+    height: 440px;
+    transform-origin: center center;
+    transform: rotate(-6deg);
+  }
+
+  /* SVG orbit trajectory line */
+  .orbit-track-svg{
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    overflow: visible;
+  }
+  .orbit-track-path{
+    stroke: rgba(143, 180, 255, 0.16);
+    stroke-width: 1.5;
+    stroke-dasharray: 6 8;
+  }
+  .orbit-track-glow{
+    stroke: rgba(143, 180, 255, 0.08);
+    stroke-width: 6;
+    filter: blur(4px);
+  }
+
+  /* Central glowing core / orbit center */
+  .orbit-center-core{
+    position: absolute;
+    left: 500px;
+    top: 220px;
+    transform: translate(-50%, -50%);
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    pointer-events: none;
+    background: radial-gradient(circle, rgba(143,180,255,0.08) 0%, rgba(79,209,165,0.04) 50%, transparent 70%);
+    border: 1px dashed rgba(143,180,255,0.12);
+  }
+
+  /* Orbiting card items */
+  .orbit-card-item{
+    position: absolute;
+    width: 164px;
+    height: 220px;
+    offset-path: path("M 80 220 A 420 120 0 1 0 920 220 A 420 120 0 1 0 80 220");
+    offset-rotate: 0deg;
+    offset-anchor: center center;
+    will-change: transform, offset-distance;
+    animation: orbitMotion 36s linear infinite;
+    cursor: pointer;
+    z-index: 10;
+  }
+
+  /* Hover pauses the entire orbit for comfortable interaction */
+  .crew-orbit-stage:hover .orbit-card-item{
+    animation-play-state: paused;
+  }
+
+  /* 6 cards evenly spaced along the orbit */
+  .orbit-card-1{ animation-delay: 0s; }
+  .orbit-card-2{ animation-delay: -6s; }
+  .orbit-card-3{ animation-delay: -12s; }
+  .orbit-card-4{ animation-delay: -18s; }
+  .orbit-card-5{ animation-delay: -24s; }
+  .orbit-card-6{ animation-delay: -30s; }
+
+  @keyframes orbitMotion{
+    0%{ offset-distance: 0%; }
+    100%{ offset-distance: 100%; }
+  }
+
+  /* Counter-rotate inner card so it stays upright throughout orbit */
+  .orbit-card-inner{
+    width: 100%;
+    height: 100%;
+    transform: rotate(6deg);
+    transform-origin: center center;
+    transition: transform .4s var(--ease), box-shadow .4s var(--ease), border-color .4s var(--ease);
+  }
+
+  .orbit-card-item:hover{
+    z-index: 50;
+  }
+  .orbit-card-item:hover .orbit-card-inner{
+    transform: rotate(6deg) scale(1.18);
+    border-color: var(--cc-line, var(--accent-line));
+    box-shadow: 0 24px 60px -10px rgba(0,0,0,0.7), 0 0 35px var(--cc-dim, var(--accent-dim));
+  }
+
+  /* ---- Card Surface & Photo Background ---- */
+  .crew-card{
+    position: relative;
+    border-radius: 18px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    border: 1px solid var(--hairline-strong);
+    background: var(--surface);
+    box-shadow: 0 14px 34px -10px rgba(0,0,0,0.5);
+    box-sizing: border-box;
+  }
+
+  .cc-photo-bg{
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    background-size: cover;
+    background-position: center top;
+    filter: saturate(1.05) brightness(0.88);
+    transition: transform .6s var(--ease), filter .6s var(--ease);
+  }
+  .orbit-card-item:hover .cc-photo-bg{
+    transform: scale(1.08);
+    filter: saturate(1.2) brightness(0.98);
+  }
+
+  /* Default space atmospheric gradient when no photo */
+  .crew-card:not([data-has-photo="true"]) .cc-photo-bg{
+    background:
+      radial-gradient(circle at 50% 20%, var(--cc-dim, rgba(143,180,255,0.12)) 0%, transparent 65%),
+      linear-gradient(180deg, rgba(18,24,36,0.85) 0%, rgba(8,11,18,0.98) 100%);
+  }
+
+  /* Gradient overlay protecting text */
+  .cc-overlay{
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    background: linear-gradient(
+      180deg,
+      rgba(7,10,16,0.2) 0%,
+      rgba(7,10,16,0.45) 30%,
+      rgba(5,7,12,0.88) 65%,
+      rgba(5,7,12,0.98) 100%
+    );
+  }
+
+  .cc-top-glow{
+    position: absolute; top: -20px; left: 50%; transform: translateX(-50%);
+    width: 100px; height: 60px; border-radius: 50%;
+    background: var(--cc, var(--accent));
+    opacity: 0.15; filter: blur(25px); pointer-events: none; z-index: 2;
+  }
+
+  /* Color themes */
+  .crew-card[data-color="purple"],
+  .crew-card[data-color="sky"]{
+    --cc: var(--accent);
+    --cc-line: rgba(143,180,255,0.45);
+    --cc-dim: rgba(143,180,255,0.15);
+  }
+  .crew-card[data-color="blue"],
+  .crew-card[data-color="green"]{
+    --cc: var(--safe);
+    --cc-line: rgba(79,209,165,0.45);
+    --cc-dim: rgba(79,209,165,0.15);
+  }
+  .crew-card[data-color="orange"],
+  .crew-card[data-color="pink"]{
+    --cc: var(--attention);
+    --cc-line: rgba(232,182,87,0.45);
+    --cc-dim: rgba(232,182,87,0.15);
+  }
+
+  .cc-shine{
+    position: absolute; inset: 0; z-index: 2;
+    background: linear-gradient(108deg, transparent 38%, rgba(255,255,255,0.04) 50%, transparent 62%);
+    pointer-events: none;
+    transform: translateX(-100%);
+    transition: transform .7s var(--ease);
+  }
+  .orbit-card-item:hover .cc-shine{ transform: translateX(200%); }
+
+  .cc-line{
+    position: absolute; bottom: 0; left: 0; right: 0; height: 2px; z-index: 4;
+    background: linear-gradient(90deg, transparent, var(--cc, var(--accent)), transparent);
+    opacity: 0; transition: opacity .35s var(--ease);
+  }
+  .orbit-card-item:hover .cc-line{ opacity: 1; }
+
+  /* Mission badge */
+  .cc-mission-id{
+    position: absolute; top: 12px; right: 12px; z-index: 4;
+    font-size: 8.5px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase;
+    padding: 2.5px 6px; border-radius: 4px;
+    background: rgba(7,10,18,0.75); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+    border: 1px solid var(--hairline-strong);
+    color: var(--text-2);
+  }
+
+  /* Card content */
+  .cc-content{
+    position: relative;
+    z-index: 3;
+    padding: 16px 14px 14px;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+  }
+
+  .cc-badge-letter{
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    background: rgba(8,12,20,0.85);
+    border: 1px solid var(--cc-line, var(--accent-line));
+    color: var(--cc, var(--accent));
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 12px;
+    margin-bottom: 6px;
+    box-shadow: 0 0 10px var(--cc-dim, var(--accent-dim));
+  }
+
+  .cc-name{
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 16px;
+    color: #ffffff;
+    letter-spacing: -0.02em;
+    margin-bottom: 2px;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.8);
+  }
+
+  .cc-callsign{
+    font-size: 9.5px;
+    font-weight: 600;
+    letter-spacing: .06em;
+    color: var(--cc, var(--accent));
+    margin-bottom: 6px;
+    opacity: 0.95;
+    text-shadow: 0 1px 4px rgba(0,0,0,0.7);
+  }
+
+  .cc-role{
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 8.5px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 999px;
+    width: fit-content;
+    color: var(--cc, var(--accent));
+    background: rgba(8,12,20,0.8);
+    backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+    border: 1px solid var(--cc-line, var(--accent-line));
+    margin-bottom: 4px;
+  }
+  .cc-role .role-dot{
+    width: 4px; height: 4px; border-radius: 50%;
+    background: var(--cc, var(--accent)); flex-shrink: 0;
+  }
+
+  .cc-bio{
+    font-size: 10.5px;
+    line-height: 1.45;
+    color: rgba(215,224,238,0.88);
+    margin: 4px 0 0;
+    display: none;
+    text-shadow: 0 1px 6px rgba(0,0,0,0.8);
+  }
+  .orbit-card-item:hover .cc-bio{
+    display: block;
+  }
+
+  /* ---- pritLS stats footer bar ---- */
+  .crew-footer-bar{
+    margin-top: 20px; padding: 24px 36px;
+    border: 1px solid var(--hairline); border-radius: 16px;
+    background: rgba(255,255,255,0.015);
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 16px; flex-wrap: wrap;
+    position: relative; overflow: hidden;
+  }
+  .crew-footer-bar::before{
+    content: ''; position: absolute;
+    top: 0; left: -60%; width: 40%; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--accent-line), transparent);
+    animation: scanSweep 5s ease-in-out infinite;
+  }
+  @keyframes scanSweep{ 0%{left:-60%;} 100%{left:130%;} }
+
+  .cfb-stat{
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+    flex: 1; min-width: 80px;
+  }
+  .cfb-stat .cfb-val{
+    font-family: var(--font-display); font-weight: 700;
+    font-size: clamp(19px,2.3vw,28px); letter-spacing: -0.025em; color: var(--text-1);
+  }
+  .cfb-stat .cfb-key{
+    font-size: 9.5px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--text-3);
+  }
+  .cfb-vdivider{ width: 1px; height: 34px; background: var(--hairline); flex-shrink: 0; }
+
+  .cfb-brand{
+    font-family: var(--font-display); font-weight: 700;
+    font-size: clamp(16px,2vw,22px); letter-spacing: -.02em;
+    display: flex; align-items: center;
+  }
+  .cfb-brand span{ display: inline-block; }
+  .cfb-brand .cb-p{ color: var(--accent); }
+  .cfb-brand .cb-r{ color: var(--safe); }
+  .cfb-brand .cb-i{ color: var(--safe); }
+  .cfb-brand .cb-t{ color: var(--attention); }
+  .cfb-brand .cb-l{ color: var(--accent); }
+  .cfb-brand .cb-s{ color: var(--attention); }
+
+  @media(max-width: 640px){
+    .crew-orbit-stage{ height: 400px; }
+    .pritls-banner{ gap: 0; }
+    .pl-char{ font-size: clamp(30px,7vw,48px); }
+    .crew-footer-bar{ justify-content: center; }
+    .cfb-brand{ display: none; }
+  }
+
+  /* ---------------- footer ---------------- */
+  footer{
+    border-top: 1px solid var(--hairline);
+    padding: 56px clamp(20px,5vw,56px) 40px;
+  }
+  .footer-inner{
+    max-width: 1120px; margin:0 auto;
+    display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:32px;
+  }
+  .footer-brand .brand{ margin-bottom: 10px; }
+  .footer-brand p{ font-size: 12.5px; color: var(--text-3); max-width: 260px; line-height:1.6; }
+  .footer-links{ display:flex; gap: 64px; }
+  .footer-col{ display:flex; flex-direction:column; gap: 12px; }
+  .footer-col .eyebrow{ margin-bottom: 4px; }
+  .footer-col a{ font-size: 13px; color: var(--text-2); transition: color .25s var(--ease); }
+  .footer-col a:hover{ color: var(--text-1); }
+
+  /* ---------------- object popover (hero interaction) ---------------- */
+  .hero-popover{
+    position:absolute; z-index:3; pointer-events:none;
+    background: rgba(11,15,24,0.78);
+    backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--hairline-strong);
+    border-radius: 12px; padding: 14px 16px;
+    min-width: 168px;
+    opacity:0; transform: translateY(4px) scale(0.98);
+    transition: opacity .25s var(--ease), transform .25s var(--ease);
+  }
+  .hero-popover.show{ opacity:1; transform: translateY(0) scale(1); }
+  .hero-popover .hp-name{ font-size:12.5px; font-weight:600; color: var(--text-1); margin-bottom:8px; letter-spacing:0.01em; }
+  .hero-popover .hp-row{ display:flex; justify-content:space-between; gap:14px; font-size:11px; color: var(--text-3); padding: 2px 0; }
+  .hero-popover .hp-row span:last-child{ color: var(--text-2); font-weight:500; }
+
+  /* ================================================================
+     SIGNATURE 3D ORBITAL LAB & INTERACTIVE ENGINE
+  ================================================================= */
+  .explore-section{
+    position: relative;
+    padding: 20px clamp(20px,5vw,56px) 60px;
+    max-width: 1240px;
+    margin: 0 auto;
+  }
+  .explore-viewport-card{
+    position: relative;
+    width: 100%;
+    height: 640px;
+    border-radius: 24px;
+    border: 1px solid var(--hairline-strong);
+    background: radial-gradient(circle at 50% 40%, rgba(16, 24, 38, 0.6) 0%, rgba(5, 7, 12, 0.95) 100%);
+    overflow: hidden;
+    box-shadow: 0 24px 60px -15px rgba(0,0,0,0.6);
+  }
+  #lab-3d-canvas{
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+
   /* ---------------- stats strip ---------------- */
   section{ position:relative; z-index:2; }
   .stats{
