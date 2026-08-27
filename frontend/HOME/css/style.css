@@ -274,6 +274,50 @@
   .flow-step .fs-body p{ font-size: 13.5px; color: var(--text-2); line-height:1.6; max-width: 520px; }
 
   /* ---------------- contributors ---------------- */
+  .contrib-shell{
+    border: 1px solid var(--hairline); border-radius: 18px; overflow: hidden;
+    background: linear-gradient(180deg, rgba(11, 15, 24, 0.9), rgba(11, 15, 24, 0.72));
+    margin-bottom: 24px; box-shadow: inset 0 1px 0 rgba(255,255,255,0.02);
+  }
+  .contrib-tabs{
+    display:flex; align-items:center; gap:8px; padding: 14px 16px 0; border-bottom: 1px solid var(--hairline);
+    background: rgba(255,255,255,0.01);
+  }
+  .contrib-tab{
+    border: 1px solid transparent; border-bottom: none; border-radius: 10px 10px 0 0;
+    background: transparent; color: var(--text-3); padding: 10px 14px; font-size: 12.5px; font-weight: 600;
+    letter-spacing: 0.06em; text-transform: uppercase; transition: all .25s var(--ease);
+  }
+  .contrib-tab.active{
+    background: rgba(143,180,255,0.08); border-color: var(--hairline); color: var(--text-1);
+    box-shadow: inset 0 1px 0 rgba(143,180,255,0.18);
+  }
+  .contrib-panel{
+    display:none; grid-template-columns: 1.4fr 0.9fr; gap: 28px; padding: 28px 26px 26px;
+  }
+  .contrib-panel.active{ display:grid; }
+  .contrib-panel-copy h3{
+    font-family: var(--font-display); font-size: clamp(24px, 2.5vw, 34px); line-height: 1.12;
+    letter-spacing: -0.02em; margin: 8px 0 12px; color: var(--text-1);
+  }
+  .contrib-panel-copy p{ font-size: 15px; line-height: 1.65; color: var(--text-2); max-width: 600px; }
+  .contrib-actions{ display:flex; flex-wrap:wrap; gap:12px; margin-top: 28px; }
+  .contribution-btn,
+  .contribution-btn-alt{ display:inline-flex; align-items:center; justify-content:center; min-height: 42px; }
+  .contribution-btn-alt{ border: 1px solid var(--hairline-strong); color: var(--text-1); background: rgba(255,255,255,0.02) }
+  .contrib-metrics{
+    display:grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; align-self: center;
+  }
+  .contrib-metrics > div{
+    border: 1px solid var(--hairline); border-radius: 12px; padding: 16px 14px; background: rgba(255,255,255,0.01);
+  }
+  .metric-label{ display:block; font-size:11px; letter-spacing:.08em; text-transform:uppercase; color: var(--text-3); margin-bottom:8px; }
+  .contrib-metrics strong{ font-family: var(--font-display); font-size: clamp(22px, 2.5vw, 28px); color: var(--text-1); }
+  .roadmap-list{ display:flex; flex-wrap:wrap; gap:8px; align-content:flex-start; align-self:center; }
+  .roadmap-list span{
+    display:inline-flex; align-items:center; padding: 9px 12px; border-radius: 999px; border: 1px solid var(--hairline-strong);
+    background: rgba(143,180,255,0.04); color: var(--text-2); font-size: 12px;
+  }
   .contrib-grid{
     display:grid; grid-template-columns: repeat(3, 1fr); gap: 24px;
   }
@@ -287,6 +331,13 @@
   }
   .contrib-card h4{ font-family: var(--font-display); font-size:15px; font-weight:600; color:var(--text-1); margin-bottom:6px;}
   .contrib-card p{ font-size: 13px; color: var(--text-2); line-height:1.6; }
+
+  @media (max-width: 760px) {
+    .contrib-panel{ grid-template-columns: 1fr; }
+    .contrib-metrics{ grid-template-columns: 1fr; }
+    .contrib-tabs{ overflow-x: auto; }
+    .contrib-grid{ grid-template-columns: 1fr; }
+  }
 
   /* ---------------- final cta ---------------- */
   .final-cta{
