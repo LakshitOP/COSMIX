@@ -54,21 +54,21 @@
         <nav class="links">
 
             <a
-                href="#home"
+                href="./index.html"
                 class="active"
             >
                 Home
             </a>
 
-            <a href="#explore">
+            <a href="../Explore/explore.html">
                 Explore
             </a>
 
-            <a href="#monitor">
+            <a href="../MONITOR/montior.html">
                 Monitor
             </a>
 
-            <a href="#analytics">
+            <a href="../Analytics/analytics.html">
                 Analytics
             </a>
 
@@ -681,94 +681,223 @@
         <!-- =====================================================
              CONTRIBUTORS
         ====================================================== -->
-
         <section id="contributors">
+    <div class="section-inner" style="padding-top:0;">
 
-            <div
-                class="section-inner"
-                style="padding-top:0;"
-            >
+      <!-- eyebrow + tagline -->
+      <div class="crew-head">
+        <div class="eyebrow">Meet the crew</div>
+        <p class="crew-tagline">Six people. One team name. <em>All first letters.</em></p>
+      </div>
 
-                <div class="section-head">
+      <!-- pritLS banner — hover each letter to reveal the name -->
+      <div class="pritls-banner">
+        <div class="pl-letter pl-p">
+          <span class="pl-char">P</span>
+          <span class="pl-name">Priyanka</span>
+        </div>
+        <div class="pl-letter pl-r">
+          <span class="pl-char">r</span>
+          <span class="pl-name">Reejul</span>
+        </div>
+        <div class="pl-letter pl-i">
+          <span class="pl-char">i</span>
+          <span class="pl-name">Isham</span>
+        </div>
+        <div class="pl-letter pl-t">
+          <span class="pl-char">t</span>
+          <span class="pl-name">Tushar</span>
+        </div>
+        <div class="pl-letter pl-l">
+          <span class="pl-char">L</span>
+          <span class="pl-name">Lakshit</span>
+        </div>
+        <div class="pl-letter pl-s">
+          <span class="pl-char">S</span>
+          <span class="pl-name">Samruddhi</span>
+        </div>
+      </div>
 
-                    <div class="eyebrow">
-                        Open source
-                    </div>
+      <!-- OrbitImages 3D Elliptical Stage with Orbiting Contributor Cards -->
+      <div class="crew-orbit-stage" id="crew-orbit-stage">
+        <div class="crew-orbit-wrapper" id="crew-orbit-wrapper">
 
-                    <h2>
-                        Built in the open,
-                        by a small team.
-                    </h2>
+          <!-- SVG Orbit Path Track & Glow -->
+          <svg class="orbit-track-svg" viewBox="0 0 1000 440" aria-hidden="true">
+            <path class="orbit-track-glow" d="M 80 220 A 420 120 0 1 0 920 220 A 420 120 0 1 0 80 220" fill="none" />
+            <path class="orbit-track-path" d="M 80 220 A 420 120 0 1 0 920 220 A 420 120 0 1 0 80 220" fill="none" />
+          </svg>
 
-                </div>
+          <!-- Central Core -->
+          <div class="orbit-center-core"></div>
 
-
-                <div class="contrib-grid">
-
-
-                    <div class="contrib-card">
-
-                        <span class="role-tag">
-                            Frontend & Visualization
-                        </span>
-
-                        <h4>
-                            Interface & 3D systems
-                        </h4>
-
-                        <p>
-                            Design system, orbital visualization
-                            and the interactive Earth scene.
-                        </p>
-
-                    </div>
-
-
-
-                    <div class="contrib-card">
-
-                        <span class="role-tag">
-                            Backend & Infrastructure
-                        </span>
-
-                        <h4>
-                            API & data pipeline
-                        </h4>
-
-                        <p>
-                            Service architecture, ingestion
-                            pipeline and persistence layer.
-                        </p>
-
-                    </div>
-
-
-
-                    <div class="contrib-card">
-
-                        <span class="role-tag">
-                            Orbital Data & Analysis
-                        </span>
-
-                        <h4>
-                            Propagation & screening
-                        </h4>
-
-                        <p>
-                            Orbit propagation, proximity
-                            screening methodology and validation.
-                        </p>
-
-                    </div>
-
-                </div>
-
+          <!-- Card 1: P — Priyanka -->
+          <div class="orbit-card-item orbit-card-1">
+            <div class="crew-card orbit-card-inner" data-color="purple">
+              <div class="cc-photo-bg"></div>
+              <div class="cc-overlay"></div>
+              <div class="cc-top-glow"></div>
+              <div class="cc-shine"></div>
+              <div class="cc-line"></div>
+              <span class="cc-mission-id">OBJ-001 · P</span>
+              <div class="cc-content">
+                <div class="cc-badge-letter">P</div>
+                <div class="cc-name">Priyanka</div>
+                <div class="cc-callsign">@priyanka · PRIT-01</div>
+                <div class="cc-role"><span class="role-dot"></span>Product &amp; UX</div>
+                <p class="cc-bio">Shapes the UI/UX vision, interaction models &amp; design hierarchy.</p>
+              </div>
             </div>
+          </div>
 
-        </section>
+          <!-- Card 2: R — Reejul -->
+          <div class="orbit-card-item orbit-card-2">
+            <div class="crew-card orbit-card-inner" data-color="blue">
+              <div class="cc-photo-bg"></div>
+              <div class="cc-overlay"></div>
+              <div class="cc-top-glow"></div>
+              <div class="cc-shine"></div>
+              <div class="cc-line"></div>
+              <span class="cc-mission-id">OBJ-002 · R</span>
+              <div class="cc-content">
+                <div class="cc-badge-letter">R</div>
+                <div class="cc-name">Reejul</div>
+                <div class="cc-callsign">@reejul · PRIT-02</div>
+                <div class="cc-role"><span class="role-dot"></span>Data Science</div>
+                <p class="cc-bio">Anomaly detection, predictive modeling &amp; orbital ML intelligence.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 3: I — Isham -->
+          <div class="orbit-card-item orbit-card-3">
+            <div class="crew-card orbit-card-inner" data-color="green" data-has-photo="true">
+              <div class="cc-photo-bg" style="background-image: url('images/isham.png');"></div>
+              <div class="cc-overlay"></div>
+              <div class="cc-top-glow"></div>
+              <div class="cc-shine"></div>
+              <div class="cc-line"></div>
+              <span class="cc-mission-id">OBJ-003 · I</span>
+              <div class="cc-content">
+                <div class="cc-badge-letter">I</div>
+                <div class="cc-name">Isham</div>
+                <div class="cc-callsign">@isham · PRIT-03</div>
+                <div class="cc-role"><span class="role-dot"></span>Backend &amp; Infra</div>
+                <p class="cc-bio">Service architecture, real-time ingestion pipeline &amp; persistence.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 4: T — Tushar -->
+          <div class="orbit-card-item orbit-card-4">
+            <div class="crew-card orbit-card-inner" data-color="orange" data-has-photo="true">
+              <div class="cc-photo-bg" style="background-image: url('images/tushar.png');"></div>
+              <div class="cc-overlay"></div>
+              <div class="cc-top-glow"></div>
+              <div class="cc-shine"></div>
+              <div class="cc-line"></div>
+              <span class="cc-mission-id">OBJ-004 · T</span>
+              <div class="cc-content">
+                <div class="cc-badge-letter">T</div>
+                <div class="cc-name">Tushar</div>
+                <div class="cc-callsign">@tushar · PRIT-04</div>
+                <div class="cc-role"><span class="role-dot"></span>Orbital Physics</div>
+                <p class="cc-bio">SGP4 orbit propagators, TLE parsing &amp; conjunction screening.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 5: L — Lakshit -->
+          <div class="orbit-card-item orbit-card-5">
+            <div class="crew-card orbit-card-inner" data-color="sky" data-has-photo="true">
+              <div class="cc-photo-bg" style="background-image: url('images/lakshit.jpg');"></div>
+              <div class="cc-overlay"></div>
+              <div class="cc-top-glow"></div>
+              <div class="cc-shine"></div>
+              <div class="cc-line"></div>
+              <span class="cc-mission-id">OBJ-005 · L</span>
+              <div class="cc-content">
+                <div class="cc-badge-letter">L</div>
+                <div class="cc-name">Lakshit</div>
+                <div class="cc-callsign">@lakshit · PRIT-05</div>
+                <div class="cc-role"><span class="role-dot"></span>Frontend &amp; 3D</div>
+                <p class="cc-bio">Design system, WebGL 3D globe &amp; real-time space visualization.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 6: S — Samruddhi -->
+          <div class="orbit-card-item orbit-card-6">
+            <div class="crew-card orbit-card-inner" data-color="pink">
+              <div class="cc-photo-bg"></div>
+              <div class="cc-overlay"></div>
+              <div class="cc-top-glow"></div>
+              <div class="cc-shine"></div>
+              <div class="cc-line"></div>
+              <span class="cc-mission-id">OBJ-006 · S</span>
+              <div class="cc-content">
+                <div class="cc-badge-letter">S</div>
+                <div class="cc-name">Samruddhi</div>
+                <div class="cc-callsign">@samruddhi · PRIT-06</div>
+                <div class="cc-role"><span class="role-dot"></span>Research &amp; Docs</div>
+                <p class="cc-bio">Space situational research, technical documentation &amp; policy.</p>
+              </div>
+            </div>
+          </div>
+
+        </div><!-- /crew-orbit-wrapper -->
+      </div><!-- /crew-orbit-stage -->
+
+      <!-- team stats footer bar -->
+      <div class="crew-footer-bar">
+        <div class="cfb-brand">
+          <span class="cb-p">P</span><span class="cb-r">r</span><span class="cb-i">i</span><span class="cb-t">t</span><span class="cb-l">L</span><span class="cb-s">S</span>
+        </div>
+        <div class="cfb-vdivider"></div>
+        <div class="cfb-stat">
+          <span class="cfb-val">6</span>
+          <span class="cfb-key">Crew members</span>
+        </div>
+        <div class="cfb-vdivider"></div>
+        <div class="cfb-stat">
+          <span class="cfb-val">12,482</span>
+          <span class="cfb-key">Objects tracked</span>
+        </div>
+        <div class="cfb-vdivider"></div>
+        <div class="cfb-stat">
+          <span class="cfb-val">100%</span>
+          <span class="cfb-key">Open source</span>
+        </div>
+        <div class="cfb-vdivider"></div>
+        <div class="cfb-stat">
+          <span class="cfb-val">∞</span>
+          <span class="cfb-key">Orbit passion</span>
+        </div>
+      </div>
+
+    </div><!-- /section-inner -->
+  </section>
 
 
+</main>
 
+<footer>
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <div class="brand"><span class="mark">✦</span> ORBITAL</div>
+      <p>An open-source space situational awareness project, built for understanding orbital congestion.</p>
+    </div>
+    <div class="footer-links">
+      <div class="footer-col">
+        <div class="eyebrow">Project</div>
+        <a href="#">Data sources</a>
+        <a href="#">GitHub</a>
+        <a href="#">Contributors</a>
+        <a href="#">About</a>
+      </div>
+    </div>
+  </div>
+</footer>
         <!-- =====================================================
              FINAL CTA
         ====================================================== -->
@@ -853,11 +982,11 @@
                         Project
                     </div>
 
-                    <a href="#">
+                    <a href="../Analytics/analytics.html">
                         Data sources
                     </a>
 
-                    <a href="#">
+                    <a href="https://github.com" target="_blank" rel="noreferrer">
                         GitHub
                     </a>
 
@@ -865,7 +994,7 @@
                         Contributors
                     </a>
 
-                    <a href="#">
+                    <a href="../Explore/explore.html">
                         About
                     </a>
 

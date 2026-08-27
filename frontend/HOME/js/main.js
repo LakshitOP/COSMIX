@@ -23,6 +23,29 @@ if (header) {
     );
 }
 
+const contribTabs = document.querySelectorAll(".contrib-tab");
+const contribPanels = document.querySelectorAll(".contrib-panel");
+
+if (contribTabs.length && contribPanels.length) {
+    contribTabs.forEach((tab) => {
+        tab.addEventListener("click", () => {
+            const targetId = tab.dataset.target;
+
+            contribTabs.forEach((item) => {
+                const isActive = item === tab;
+                item.classList.toggle("active", isActive);
+                item.setAttribute("aria-selected", String(isActive));
+            });
+
+            contribPanels.forEach((panel) => {
+                const isActive = panel.id === targetId;
+                panel.classList.toggle("active", isActive);
+                panel.hidden = !isActive;
+            });
+        });
+    });
+}
+
 
 // ================================================================
 // THREE.JS ORBITAL EARTH SCENE
