@@ -51,6 +51,9 @@ const trigger =
 const signinLink =
     document.getElementById("auth-signin-link");
 
+const navAvatar =
+    document.getElementById("nav-avatar");
+
 const emailStorageKey =
     "emailForSignIn";
 
@@ -59,7 +62,7 @@ const emailStorageKey =
 // MODAL
 // --------------------------------------------------
 
-function openModal() {
+export function openModal() {
 
     if (!overlay) {
 
@@ -67,7 +70,7 @@ function openModal() {
 
     }
 
-    overlay.classList.add("show");
+    overlay.classList.add("open", "show");
 
     overlay.setAttribute(
         "aria-hidden",
@@ -77,8 +80,10 @@ function openModal() {
     document.body.style.overflow = "hidden";
 }
 
+window.openAuthModal = openModal;
 
-function closeModal() {
+
+export function closeModal() {
 
     if (!overlay) {
 
@@ -86,7 +91,7 @@ function closeModal() {
 
     }
 
-    overlay.classList.remove("show");
+    overlay.classList.remove("open", "show");
 
     overlay.setAttribute(
         "aria-hidden",
@@ -96,12 +101,23 @@ function closeModal() {
     document.body.style.overflow = "";
 }
 
+window.closeAuthModal = closeModal;
+
 
 // Open from "Get Started"
 
 if (trigger) {
 
     trigger.addEventListener(
+        "click",
+        openModal
+    );
+
+}
+
+if (navAvatar) {
+
+    navAvatar.addEventListener(
         "click",
         openModal
     );
@@ -176,7 +192,7 @@ document.addEventListener(
         if (
             event.key === "Escape" &&
             overlay &&
-            overlay.classList.contains("show")
+            (overlay.classList.contains("show") || overlay.classList.contains("open"))
         ) {
 
             closeModal();

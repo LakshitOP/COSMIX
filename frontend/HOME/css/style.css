@@ -105,6 +105,7 @@
     border: 1px solid var(--hairline-strong);
     display:flex; align-items:center; justify-content:center;
     font-size: 11px; color: var(--text-2); font-weight:600;
+    cursor: pointer;
   }
   .menu-toggle{ display:none; }
 
@@ -827,7 +828,8 @@
     opacity: 0; pointer-events: none;
     transition: opacity .3s var(--ease);
   }
-  .auth-overlay.open{
+  .auth-overlay.open,
+  .auth-overlay.show{
     opacity: 1; pointer-events: auto;
   }
   .auth-panel{
@@ -840,7 +842,8 @@
     transform: translateY(12px) scale(0.97);
     transition: transform .3s var(--ease);
   }
-  .auth-overlay.open .auth-panel{
+  .auth-overlay.open .auth-panel,
+  .auth-overlay.show .auth-panel{
     transform: translateY(0) scale(1);
   }
   .auth-head{
