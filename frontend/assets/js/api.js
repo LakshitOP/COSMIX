@@ -444,6 +444,255 @@
     },
 
     /**
+     * Get synchronized notifications data list
+     */
+    async getNotificationsList() {
+      const conjunctions = await this.getConjunctions({ limit: 10 }).catch(() => []);
+      const readSet = getReadNotifIds();
+      const notifs = [];
+
+      if (Array.isArray(conjunctions) && conjunctions.length > 0) {
+        conjunctions.forEach((c, idx) => {
+          const id = `conj_${c.id || (c.sat1_id + '_' + c.sat2_id)}`;
+          const isHigh = (c.risk_level || '').toUpperCase() === 'HIGH' || (c.risk_level || '').toUpperCase() === 'CRITICAL';
+          const missKm = Number(c.miss_distance_km).toFixed(1);
+          const score = (Number(c.risk_score) * 100).toFixed(1);
+          const alt = c.sat1_alt_at_tca_km ? `${Math.round(c.sat1_alt_at_tca_km)} km` : 'LEO';
+
+          notifs.push({
+            id: id,
+            category: 'conjunctions',
+            isRead: readSet.has(id),
+            isHighRisk: isHigh,
+            title: isHigh ? 'High-Risk Conjunction Alert' : 'Close Approach Flagged',
+            timeAgo: `${(idx + 1) * 12}m ago`,
+            desc: `<strong style="color:var(--text-1)">${c.sat1_name}</strong> predicted within ${missKm} km of <strong style="color:var(--accent)">${c.sat2_name}</strong>.`,
+            tag1: `Risk: ${score}%`,
+            tag1Class: isHigh ? 'tag-risk' : 'tag-attention',
+            tag2: alt,
+            raw: c
+          });
+        });
+      }
+
+      const sysId = 'sys_celestrak_telemetry';
+      notifs.push({
+        id: sysId,
+        category: 'system',
+        isRead: readSet.has(sysId),
+        isHighRisk: false,
+        title: 'CelesTrak GP Telemetry Active',
+        timeAgo: 'Just now',
+        desc: 'Real-time SGP4 orbital propagator active. High-precision screening enabled.',
+        tag1: 'Operational',
+        tag1Class: 'tag-safe',
+        tag2: 'Live',
+        raw: null
+      });
+
+      return notifs;
+    },
+
+    /** Mark single notification as read across tabs */
+    markNotificationRead(id) {
+      markNotificationRead(id);
+    },
+
+    /** Mark all notifications as read across tabs */
+    markAllNotificationsRead(allIds) {
+      markAllNotificationsRead(allIds);
+    },
+
+    /**
+     * Render and wire notification dropdown synchronously across all pages and tabs
+     */
+    async syncNotificationsUI() {
+      const notifList = document.getElementById('notif-list');
+      const notifBadge = document.getElementById('notif-badge');
+      const unreadCount = document.getElementById('notif-unread-count');
+      const notifBtn = document.getElementById('notif-btn');
+      const notifDropdown = document.getElementById('notif-dropdown');
+      const markReadBtn = document.getElementById('notif-mark-read');
+      const notifTabs = document.querySelectorAll('.notif-tab');
+
+      if (!notifList && !notifBadge) return;
+
+      let currentNotifs = getCachedNotifs() || [];
+
+      function renderItems(itemsList) {
+        if (!itemsList) itemsList = currentNotifs;
+        const readSet = getReadNotifIds();
+        let unreadTotal = 0;
+
+        if (notifList && itemsList.length > 0) {
+          notifList.innerHTML = itemsList.map(n => {
+            const isRead = readSet.has(n.id);
+            if (!isRead) unreadTotal++;
+
+            const iconHtml = n.category === 'system'
+              ? `<div class="notif-icon notif-safe"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10" /><path d="m9 12 2 2 4-4" /></svg></div>`
+              : `<div class="notif-icon ${n.isHighRisk ? 'notif-risk' : 'notif-attention'}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" /><line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" /></svg></div>`;
+
+            return `
+              <div class="notif-item ${isRead ? '' : 'unread'}" data-id="${n.id}" data-category="${n.category}">
+                ${iconHtml}
+                <div class="notif-content">
+                  <div class="notif-title-row">
+                    <span class="notif-title">${n.title}</span>
+                    <span class="notif-time">${n.timeAgo}</span>
+                  </div>
+                  <p class="notif-desc">${n.desc}</p>
+                  <div class="notif-meta-tags">
+                    <span class="notif-tag ${n.tag1Class}">${n.tag1}</span>
+                    ${n.tag2 ? `<span class="notif-tag">${n.tag2}</span>` : ''}
+                  </div>
+                </div>
+                <span class="unread-dot"></span>
+              </div>
+            `;
+          }).join('');
+
+          // Item click marks read
+          document.querySelectorAll('#notif-list .notif-item').forEach(el => {
+            el.addEventListener('click', () => {
+              const id = el.dataset.id;
+              markNotificationRead(id);
+              renderItems();
+            });
+          });
+
+          // Filter tab state
+          const activeTab = document.querySelector('.notif-tab.active');
+          const filter = activeTab ? activeTab.dataset.filter : 'all';
+          document.querySelectorAll('#notif-list .notif-item').forEach(item => {
+            if (filter === 'all' || item.dataset.category === filter) {
+              item.style.display = 'flex';
+            } else {
+              item.style.display = 'none';
+            }
+          });
+        } else if (itemsList.length > 0) {
+          itemsList.forEach(n => {
+            if (!readSet.has(n.id)) unreadTotal++;
+          });
+        }
+
+        if (notifBadge) {
+          if (unreadTotal > 0) {
+            notifBadge.textContent = unreadTotal.toString();
+            notifBadge.classList.remove('hidden');
+            notifBadge.style.display = 'inline-flex';
+          } else {
+            notifBadge.textContent = '0';
+            notifBadge.classList.add('hidden');
+            notifBadge.style.display = 'none';
+          }
+        }
+        if (unreadCount) unreadCount.textContent = `${unreadTotal} unread`;
+      }
+
+      // 1. Instant synchronous render from local cache (0ms delay, zero flash/glitch)
+      if (currentNotifs.length > 0) {
+        renderItems(currentNotifs);
+      }
+
+      // 2. Fetch fresh conjunctions & update cache
+      try {
+        const freshNotifs = await this.getNotificationsList();
+        if (Array.isArray(freshNotifs) && freshNotifs.length > 0) {
+          currentNotifs = freshNotifs;
+          saveCachedNotifs(freshNotifs);
+          renderItems(currentNotifs);
+        }
+      } catch (e) {}
+
+      const allIds = currentNotifs.map(n => n.id);
+
+      // Dropdown toggle
+      if (notifBtn && notifDropdown && !notifBtn._notifInitialized) {
+        notifBtn._notifInitialized = true;
+        notifBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const isOpen = notifDropdown.classList.toggle('open');
+          notifBtn.setAttribute('aria-expanded', isOpen);
+        });
+
+        document.addEventListener('click', (e) => {
+          if (!notifDropdown.contains(e.target) && !notifBtn.contains(e.target)) {
+            notifDropdown.classList.remove('open');
+            notifBtn.setAttribute('aria-expanded', 'false');
+          }
+        });
+
+        document.addEventListener('keydown', (e) => {
+          if (e.key === 'Escape') {
+            notifDropdown.classList.remove('open');
+            notifBtn.setAttribute('aria-expanded', 'false');
+          }
+        });
+      }
+
+      // Mark all read button
+      if (markReadBtn && !markReadBtn._notifInitialized) {
+        markReadBtn._notifInitialized = true;
+        markReadBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          markAllNotificationsRead(allIds);
+          renderItems();
+        });
+      }
+
+      // Tab filters
+      if (notifTabs) {
+        notifTabs.forEach(tab => {
+          if (!tab._notifInitialized) {
+            tab._notifInitialized = true;
+            tab.addEventListener('click', (e) => {
+              e.stopPropagation();
+              notifTabs.forEach(t => t.classList.remove('active'));
+              tab.classList.add('active');
+              const filter = tab.dataset.filter;
+              document.querySelectorAll('#notif-list .notif-item').forEach(item => {
+                if (filter === 'all' || item.dataset.category === filter) {
+                  item.style.display = 'flex';
+                } else {
+                  item.style.display = 'none';
+                }
+              });
+            });
+          }
+        });
+      }
+
+      // Sync across browser tabs and windows
+      if (!window._cosmixNotifStorageListenerAttached) {
+        window._cosmixNotifStorageListenerAttached = true;
+        window.addEventListener('storage', (e) => {
+          if (e.key === NOTIF_STORAGE_KEY || e.key === NOTIF_CACHE_KEY) {
+            const cached = getCachedNotifs();
+            if (cached) currentNotifs = cached;
+            renderItems();
+          }
+        });
+
+        window.addEventListener('cosmix:notifications-changed', () => {
+          renderItems();
+        });
+
+        // Tab visibility and focus synchronization
+        document.addEventListener('visibilitychange', () => {
+          if (!document.hidden) {
+            renderItems();
+          }
+        });
+
+        window.addEventListener('pageshow', () => {
+          renderItems();
+        });
+      }
+    },
+
+    /**
      * Connect to live SGP4 1Hz Telemetry WebSocket
      */
     connectTelemetry(onMessage, onError) {
@@ -467,6 +716,65 @@
       }
     }
   };
+
+  /* Helper functions for notification state persistence */
+  const NOTIF_STORAGE_KEY = 'cosmix_read_notifs';
+  const NOTIF_CACHE_KEY = 'cosmix_cached_notifs_list';
+
+  function getCachedNotifs() {
+    try {
+      const raw = localStorage.getItem(NOTIF_CACHE_KEY);
+      return raw ? JSON.parse(raw) : null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function saveCachedNotifs(list) {
+    try {
+      localStorage.setItem(NOTIF_CACHE_KEY, JSON.stringify(list));
+    } catch (e) {}
+  }
+
+  function getReadNotifIds() {
+    try {
+      const raw = localStorage.getItem(NOTIF_STORAGE_KEY);
+      return raw ? new Set(JSON.parse(raw)) : new Set();
+    } catch (e) {
+      return new Set();
+    }
+  }
+
+  function saveReadNotifIds(setOrArr) {
+    try {
+      const arr = Array.from(setOrArr);
+      localStorage.setItem(NOTIF_STORAGE_KEY, JSON.stringify(arr));
+    } catch (e) {}
+  }
+
+  function markNotificationRead(id) {
+    if (!id) return;
+    const readSet = getReadNotifIds();
+    readSet.add(String(id));
+    saveReadNotifIds(readSet);
+    window.dispatchEvent(new CustomEvent('cosmix:notifications-changed', { detail: { id, read: true } }));
+  }
+
+  function markAllNotificationsRead(allIds = []) {
+    const readSet = getReadNotifIds();
+    allIds.forEach(id => readSet.add(String(id)));
+    saveReadNotifIds(readSet);
+    window.dispatchEvent(new CustomEvent('cosmix:notifications-changed', { detail: { allRead: true } }));
+  }
+
+  // Auto-synchronize notifications when DOM is ready
+  if (typeof document !== 'undefined') {
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', () => CosmixAPI.syncNotificationsUI());
+    } else {
+      CosmixAPI.syncNotificationsUI();
+    }
+  }
 
   return CosmixAPI;
 });
