@@ -24,6 +24,23 @@
   // In-memory instant cache to avoid duplicate network latency
   const _API_CACHE = new Map();
   const CACHE_TTL_MS = 20000;
+  const USER_STORAGE_KEY = 'cosmix_user';
+
+  function isAuthenticated() {
+    try {
+      const raw = localStorage.getItem(USER_STORAGE_KEY);
+      const user = raw ? JSON.parse(raw) : null;
+      return !!(user && (user.uid || user.email));
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function authRequiredError() {
+    const err = new Error('Sign in required to access ORBITAL data.');
+    err.code = 'AUTH_REQUIRED';
+    return err;
+  }
 
   // Fallback satellite records if backend server is unreachable
   const FALLBACK_CATALOG = [
@@ -818,7 +835,9 @@
   // Auto-synchronize notifications and user session when DOM is ready
   if (typeof document !== 'undefined') {
     const initSync = () => {
-      CosmixAPI.syncNotificationsUI();
+      if (isAuthenticated()) {
+        CosmixAPI.syncNotificationsUI();
+      }
       CosmixAPI.syncUserSessionUI();
     };
 
@@ -839,5 +858,47 @@
     });
   }
 
-  return CosmixAPI;
+  const protectedMethods = new Set([
+    'getHealth',
+    'getCatalogStatus',
+    'getStats',
+    'getCatalog',
+    'searchCatalog',
+    'getOrbitTracks',
+    'getConjunctions',
+    'runConjunctionScan',
+    'computeLiveConjunctions',
+    'getRecentlyViewed',
+    'recordRecentlyViewed',
+    'getWatchlist',
+    'saveToWatchlist',
+    'removeFromWatchlist',
+    'getNotificationsList',
+    'connectTelemetry'
+  ]);
+
+  return new Proxy(CosmixAPI, {
+    get(target, prop, receiver) {
+      const value = Reflect.get(target, prop, receiver);
+
+      if (prop === 'syncNotificationsUI' && typeof value === 'function') {
+        return function (...args) {
+          if (!isAuthenticated()) return Promise.resolve(null);
+          return value.apply(target, args);
+        };
+      }
+
+      if (protectedMethods.has(prop) && typeof value === 'function') {
+        return function (...args) {
+          if (!isAuthenticated()) {
+            if (prop === 'connectTelemetry') return null;
+            return Promise.reject(authRequiredError());
+          }
+          return value.apply(target, args);
+        };
+      }
+
+      return value;
+    }
+  });
 });

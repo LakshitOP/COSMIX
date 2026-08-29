@@ -38,6 +38,7 @@ const EMAIL_STORAGE_KEY = "cosmix_email_for_signin";
 const USER_STORAGE_KEY = "cosmix_user";
 const GROUND_STATION_KEY = "cosmix_ground_station";
 const SETTINGS_KEY = "cosmix_settings";
+const AUTH_RETURN_KEY = "cosmix_auth_return_to";
 
 // Providers
 const googleProvider = new GoogleAuthProvider();
@@ -283,6 +284,70 @@ export function closeAuthModal() {
     clearStatus();
 }
 window.closeAuthModal = closeAuthModal;
+
+function getProtectedReturnPath() {
+    try {
+        const returnTo = sessionStorage.getItem(AUTH_RETURN_KEY);
+        if (returnTo && /\/(Explore|MONITOR|Analytics)\//i.test(returnTo)) {
+            return returnTo;
+        }
+    } catch (e) {}
+    return "";
+}
+
+function finishAuthenticatedSession(user, message) {
+    updateOperatorUI(user);
+
+    const returnTo = getProtectedReturnPath();
+    if (returnTo) {
+        try {
+            sessionStorage.removeItem(AUTH_RETURN_KEY);
+        } catch (e) {}
+        window.location.href = returnTo;
+        return;
+    }
+
+    closeAuthModal();
+    showToast(message, "success");
+}
+
+function isProtectedDestination(url) {
+    try {
+        const target = new URL(url, window.location.href);
+        return /\/(Explore|MONITOR|Analytics)\//i.test(target.pathname);
+    } catch (e) {
+        return false;
+    }
+}
+
+function requireAuthForProtectedLinks() {
+    document.addEventListener("click", (event) => {
+        const link = event.target.closest("a[href]");
+        if (!link || !isProtectedDestination(link.href) || currentUser) return;
+
+        event.preventDefault();
+        try {
+            const target = new URL(link.href, window.location.href);
+            sessionStorage.setItem(AUTH_RETURN_KEY, `${target.pathname}${target.search}${target.hash}`);
+        } catch (e) {}
+
+        openAuthModal("signin");
+        setStatus("Please sign in to access live orbital data.", "info");
+    });
+}
+
+function openAuthFromRedirect() {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("auth") !== "required") return;
+
+    openAuthModal("signin");
+    setStatus("Please sign in to access live orbital data.", "info");
+
+    try {
+        const cleanUrl = `${window.location.pathname}${window.location.hash}`;
+        window.history.replaceState({}, document.title, cleanUrl);
+    } catch (e) {}
+}
 
 if (authCloseBtn) authCloseBtn.addEventListener("click", closeAuthModal);
 if (tabBtnSignin) tabBtnSignin.addEventListener("click", () => switchAuthView("signin"));
@@ -987,9 +1052,7 @@ async function handleSocialSignIn(provider, providerLabel, button) {
         const result = await signInWithPopup(auth, provider);
         const user = result.user;
 
-        updateOperatorUI(user);
-        closeAuthModal();
-        showToast(`Welcome, ${user.displayName || user.email}!`, "success");
+        finishAuthenticatedSession(user, `Welcome, ${user.displayName || user.email}!`);
     } catch (err) {
         console.error(`${providerLabel} Auth error:`, err);
         setStatus(describeAuthError(err), "error");
@@ -1020,9 +1083,7 @@ if (signinForm) {
             setStatus("Verifying credentials with Orbital Security...", "info");
 
             const credential = await signInWithEmailAndPassword(auth, email, password);
-            updateOperatorUI(credential.user);
-            closeAuthModal();
-            showToast(`Welcome back, ${credential.user.displayName || credential.user.email}!`, "success");
+            finishAuthenticatedSession(credential.user, `Welcome back, ${credential.user.displayName || credential.user.email}!`);
         } catch (err) {
             console.error("Sign-in error:", err);
             setStatus(describeAuthError(err), "error");
@@ -1071,9 +1132,7 @@ if (signupForm) {
             credential.user.role = role;
             credential.user.username = username;
 
-            updateOperatorUI(credential.user);
-            closeAuthModal();
-            showToast(`Account created! Welcome aboard, ${fullName}!`, "success");
+            finishAuthenticatedSession(credential.user, `Account created! Welcome aboard, ${fullName}!`);
         } catch (err) {
             console.error("Sign-up error:", err);
             setStatus(describeAuthError(err), "error");
@@ -1168,9 +1227,7 @@ async function completeEmailLinkSignIn() {
 
         window.history.replaceState({}, document.title, window.location.pathname);
 
-        updateOperatorUI(result.user);
-        closeAuthModal();
-        showToast(`Authenticated via Magic Link as ${result.user.email}!`, "success");
+        finishAuthenticatedSession(result.user, `Authenticated via Magic Link as ${result.user.email}!`);
     } catch (err) {
         console.error("Email link sign-in error:", err);
         setStatus(describeAuthError(err), "error");
@@ -1238,3 +1295,6 @@ window.addEventListener("storage", (e) => {
         } catch (err) {}
     }
 });
+
+requireAuthForProtectedLinks();
+openAuthFromRedirect();
