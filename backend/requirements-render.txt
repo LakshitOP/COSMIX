@@ -1,0 +1,17 @@
+fastapi==0.141.1
+uvicorn[standard]==0.52.4
+pydantic==2.13.4
+sqlalchemy==2.0.48
+psycopg2-binary==2.9.12
+requests==2.34.2
+numpy==2.4.3
+pandas==3.0.1
+scikit-learn==1.8.0
+xgboost==3.4.1
+joblib==1.5.3
+skyfield==1.55
+sgp4==2.27
+python-dotenv==1.2.3
+anyio==4.13.0
+starlette==1.6.0
+websockets==17.0.1

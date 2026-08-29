@@ -32,10 +32,16 @@
         href="../assets/css/notifications.css"
     >
 
-    <!-- Three.js -->
-    <script
-        src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"
-    ></script>
+    <!-- Three.js with multi-CDN fallback -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        if (typeof THREE === 'undefined') {
+            document.write('<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"><\/script>');
+        }
+        if (typeof THREE === 'undefined') {
+            document.write('<script src="https://unpkg.com/three@0.128.0/build/three.min.js"><\/script>');
+        }
+    </script>
 </head>
 
 
@@ -277,11 +283,11 @@
             <!-- Hero content -->
             <div class="hero-content">
 
-                <div class="eyebrow">
+                <div class="eyebrow" id="hero-eyebrow">
 
                     <span class="dot"></span>
 
-                    Live orbital feed · 12,482 objects tracked
+                    <span id="hero-eyebrow-text">Live orbital feed · Loading objects...</span>
 
                 </div>
 
@@ -367,56 +373,56 @@
 
         <section class="stats">
 
-            <div class="stat">
+            <a href="../Explore/explore.html?tab=orbital-map" class="stat" style="text-decoration:none;color:inherit;cursor:pointer;">
 
-                <div class="num">
-                    12,482
+                <div class="num" id="home-stat-objects">
+                    —
                 </div>
 
                 <div class="label">
                     Objects tracked
                 </div>
 
-            </div>
+            </a>
 
 
-            <div class="stat">
+            <a href="../Explore/explore.html?tab=debris" class="stat" style="text-decoration:none;color:inherit;cursor:pointer;">
 
-                <div class="num">
-                    8,421
+                <div class="num" id="home-stat-debris">
+                    —
                 </div>
 
                 <div class="label">
                     Debris
                 </div>
 
-            </div>
+            </a>
 
 
-            <div class="stat">
+            <a href="../MONITOR/montior.html" class="stat" style="text-decoration:none;color:inherit;cursor:pointer;">
 
-                <div class="num">
-                    34
+                <div class="num" id="home-stat-approaches">
+                    —
                 </div>
 
                 <div class="label">
                     Close approaches
                 </div>
 
-            </div>
+            </a>
 
 
-            <div class="stat">
+            <a href="../Analytics/analytics.html" class="stat" style="text-decoration:none;color:inherit;cursor:pointer;">
 
-                <div class="num">
-                    3
+                <div class="num" id="home-stat-regions">
+                    —
                 </div>
 
                 <div class="label">
                     Orbital regions
                 </div>
 
-            </div>
+            </a>
 
         </section>
 
@@ -458,7 +464,7 @@
 
                     <!-- Satellites -->
 
-                    <div class="track-card">
+                    <a href="../Explore/explore.html?tab=satellites" class="track-card" style="text-decoration:none;color:inherit;cursor:pointer;">
 
                         <svg
                             class="track-icon"
@@ -502,13 +508,13 @@
                             to scientific platforms.
                         </p>
 
-                    </div>
+                    </a>
 
 
 
                     <!-- Space debris -->
 
-                    <div class="track-card">
+                    <a href="../Explore/explore.html?tab=debris" class="track-card" style="text-decoration:none;color:inherit;cursor:pointer;">
 
                         <svg
                             class="track-icon"
@@ -568,13 +574,13 @@
                             environment.
                         </p>
 
-                    </div>
+                    </a>
 
 
 
                     <!-- Close approaches -->
 
-                    <div class="track-card">
+                    <a href="../MONITOR/montior.html" class="track-card" style="text-decoration:none;color:inherit;cursor:pointer;">
 
                         <svg
                             class="track-icon"
@@ -621,7 +627,7 @@
                             the fact.
                         </p>
 
-                    </div>
+                    </a>
 
                 </div>
 
@@ -1464,11 +1470,11 @@
     ></script>
 
 
+    <!-- Unified API Client -->
+    <script src="../assets/js/api.js"></script>
+
     <!-- Main application -->
-    <script
-        type="module"
-        src="./js/main.js"
-    ></script>
+    <script src="./js/main.js"></script>
 
     <!-- Notification Flyout Script -->
     <script>

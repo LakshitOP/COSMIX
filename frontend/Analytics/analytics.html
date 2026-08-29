@@ -8,6 +8,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../assets/css/notifications.css">
+<!-- Unified API Client -->
+<script src="../assets/js/api.js"></script>
 <style>
   :root{
     /* ---- ORBITAL Core Design System ---- */
@@ -985,8 +987,8 @@
       <p>See the patterns behind Earth's orbital environment. Explore population, altitude, congestion, orbital regimes and changes over time.</p>
     </div>
     <div class="header-right">
-      <div class="freshness-pill">
-        <span class="status-dot"></span> Catalog: 12,482 Objects · 32s ago
+      <div class="freshness-pill" id="analytics-freshness-pill">
+        <span class="status-dot"></span> <span id="analytics-freshness-text">Catalog: Loading...</span>
       </div>
       <button class="btn-action-outline" onclick="triggerDiscovery()">
         ✦ <span>Discover</span>
@@ -1016,10 +1018,10 @@
       <canvas id="population-canvas"></canvas>
       <div class="pop-tooltip" id="pop-tooltip">
         <div class="pt-alt" id="pt-alt">550 km Altitude</div>
-        <div class="pt-row"><span>Total Objects</span><span id="pt-total">2,184</span></div>
-        <div class="pt-row"><span>Debris Remnants</span><span id="pt-deb">1,412</span></div>
-        <div class="pt-row"><span>Active Satellites</span><span id="pt-sat">681</span></div>
-        <div class="pt-row"><span>Rocket Bodies</span><span id="pt-rb">91</span></div>
+        <div class="pt-row"><span>Total Objects</span><span id="pt-total">—</span></div>
+        <div class="pt-row"><span>Debris Remnants</span><span id="pt-deb">—</span></div>
+        <div class="pt-row"><span>Active Satellites</span><span id="pt-sat">—</span></div>
+        <div class="pt-row"><span>Rocket Bodies</span><span id="pt-rb">—</span></div>
       </div>
     </div>
   </div>
@@ -1054,15 +1056,15 @@
         <div class="radial-stats">
           <div class="regime-pill-item active" onclick="selectRegime('LEO', this)">
             <span class="rpi-name">LEO (160–2,000 km)</span>
-            <span class="rpi-count" style="color:var(--risk);">10,482 (84%)</span>
+            <span class="rpi-count" id="regime-leo-count" style="color:var(--risk);">—</span>
           </div>
           <div class="regime-pill-item" onclick="selectRegime('MEO', this)">
             <span class="rpi-name">MEO (2,000–35,786 km)</span>
-            <span class="rpi-count" style="color:var(--attention);">1,388 (11%)</span>
+            <span class="rpi-count" id="regime-meo-count" style="color:var(--attention);">—</span>
           </div>
           <div class="regime-pill-item" onclick="selectRegime('GEO', this)">
             <span class="rpi-name">GEO (35,786 km)</span>
-            <span class="rpi-count" style="color:var(--safe);">612 (5%)</span>
+            <span class="rpi-count" id="regime-geo-count" style="color:var(--safe);">—</span>
           </div>
         </div>
       </div>
@@ -1080,25 +1082,25 @@
 
       <div class="delta-grid">
         <div class="delta-box">
-          <div class="delta-num pos">+4.8%</div>
+          <div class="delta-num pos" id="delta-tracked">+4.8%</div>
           <div class="delta-lbl">Tracked Objects</div>
         </div>
         <div class="delta-box">
-          <div class="delta-num pos">+7.2%</div>
+          <div class="delta-num pos" id="delta-debris">+7.2%</div>
           <div class="delta-lbl">Debris Remnants</div>
         </div>
         <div class="delta-box">
-          <div class="delta-num pos">+11.4%</div>
+          <div class="delta-num pos" id="delta-leo">+11.4%</div>
           <div class="delta-lbl">LEO Density (550km)</div>
         </div>
         <div class="delta-box">
-          <div class="delta-num neg">−2.1%</div>
+          <div class="delta-num neg" id="delta-geo">−2.1%</div>
           <div class="delta-lbl">GEO Repositioning</div>
         </div>
       </div>
 
-      <div class="delta-narrative">
-        <strong>Observation:</strong> The largest population increase occurred between 500–600 km altitude, where commercial mega-constellation deployments raised local density by 11.4%.
+      <div class="delta-narrative" id="delta-narrative-text">
+        <strong>Observation:</strong> The largest population increase occurred between 500–600 km altitude, where commercial mega-constellation deployments raised local density.
       </div>
     </div>
   </div>
@@ -1115,28 +1117,28 @@
     <div class="spectrum-bars">
       <div class="spectrum-row">
         <span class="spec-alt">500–600 km</span>
-        <div class="spec-track"><div class="spec-fill hot" style="width: 96%;"></div></div>
-        <span class="spec-meta" style="color:var(--risk);">3,842 objs (HOT)</span>
+        <div class="spec-track"><div class="spec-fill hot" id="spec-bar-1" style="width: 96%;"></div></div>
+        <span class="spec-meta" id="spec-meta-1" style="color:var(--risk);">—</span>
       </div>
       <div class="spectrum-row">
         <span class="spec-alt">550–650 km</span>
-        <div class="spec-track"><div class="spec-fill hot" style="width: 82%;"></div></div>
-        <span class="spec-meta" style="color:var(--attention);">3,210 objs</span>
+        <div class="spec-track"><div class="spec-fill hot" id="spec-bar-2" style="width: 82%;"></div></div>
+        <span class="spec-meta" id="spec-meta-2" style="color:var(--attention);">—</span>
       </div>
       <div class="spectrum-row">
         <span class="spec-alt">700–800 km</span>
-        <div class="spec-track"><div class="spec-fill" style="width: 58%;"></div></div>
-        <span class="spec-meta">2,140 objs</span>
+        <div class="spec-track"><div class="spec-fill" id="spec-bar-3" style="width: 58%;"></div></div>
+        <span class="spec-meta" id="spec-meta-3">—</span>
       </div>
       <div class="spectrum-row">
         <span class="spec-alt">800–900 km</span>
-        <div class="spec-track"><div class="spec-fill" style="width: 44%;"></div></div>
-        <span class="spec-meta">1,620 objs</span>
+        <div class="spec-track"><div class="spec-fill" id="spec-bar-4" style="width: 44%;"></div></div>
+        <span class="spec-meta" id="spec-meta-4">—</span>
       </div>
       <div class="spectrum-row">
         <span class="spec-alt">1000–1200 km</span>
-        <div class="spec-track"><div class="spec-fill" style="width: 28%;"></div></div>
-        <span class="spec-meta">980 objs</span>
+        <div class="spec-track"><div class="spec-fill" id="spec-bar-5" style="width: 28%;"></div></div>
+        <span class="spec-meta" id="spec-meta-5">—</span>
       </div>
     </div>
   </div>
@@ -1167,19 +1169,19 @@
     <div class="tm-metrics-row">
       <div class="tm-metric-box">
         <span>Tracked Population</span>
-        <span id="tm-total">12,482</span>
+        <span id="tm-total">—</span>
       </div>
       <div class="tm-metric-box">
         <span>Debris Remnants</span>
-        <span id="tm-debris">8,421</span>
+        <span id="tm-debris">—</span>
       </div>
       <div class="tm-metric-box">
         <span>Active Satellites</span>
-        <span id="tm-sats">3,480</span>
+        <span id="tm-sats">—</span>
       </div>
       <div class="tm-metric-box">
         <span>Daily Conjunction Events</span>
-        <span id="tm-events" style="color:var(--attention);">34</span>
+        <span id="tm-events" style="color:var(--attention);">—</span>
       </div>
     </div>
   </div>
@@ -1199,7 +1201,7 @@
 
       <div>
         <div style="font-size:10.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);margin-bottom:8px;">Similar Orbit Matches (ISS Base)</div>
-        <div class="similar-list">
+        <div class="similar-list" id="dna-similar-list">
           <div class="similar-item">
             <span>TIANGONG SPACE STATION</span>
             <span class="sim-match-pill">94% MATCH</span>
@@ -1224,28 +1226,28 @@
       </div>
 
       <div style="display:flex;gap:4px;height:12px;border-radius:999px;overflow:hidden;margin-bottom:20px;">
-        <div style="width:68%;background:var(--risk);" title="Debris (68%)"></div>
-        <div style="width:23%;background:var(--accent);" title="Active Satellites (23%)"></div>
-        <div style="width:6%;background:var(--attention);" title="Rocket Bodies (6%)"></div>
-        <div style="width:3%;background:var(--text-3);" title="Unknown (3%)"></div>
+        <div id="comp-bar-deb" style="width:17%;background:var(--risk);" title="Debris"></div>
+        <div id="comp-bar-sat" style="width:83%;background:var(--accent);" title="Active Satellites"></div>
+        <div id="comp-bar-rb" style="width:0%;background:var(--attention);" title="Rocket Bodies"></div>
+        <div id="comp-bar-unk" style="width:0%;background:var(--text-3);" title="Unknown"></div>
       </div>
 
       <div style="display:flex;flex-direction:column;gap:8px;">
         <div style="display:flex;justify-content:space-between;font-size:12px;">
           <span style="color:var(--text-2);">● Fragmentation Debris</span>
-          <span style="font-family:var(--font-mono);color:var(--text-1);">5,218 (62%)</span>
+          <span style="font-family:var(--font-mono);color:var(--text-1);" id="tax-frag-deb">—</span>
         </div>
         <div style="display:flex;justify-content:space-between;font-size:12px;">
           <span style="color:var(--text-2);">● Defunct Upper Stage Rocket Bodies</span>
-          <span style="font-family:var(--font-mono);color:var(--text-1);">1,514 (18%)</span>
+          <span style="font-family:var(--font-mono);color:var(--text-1);" id="tax-rb">—</span>
         </div>
         <div style="display:flex;justify-content:space-between;font-size:12px;">
           <span style="color:var(--text-2);">● Defunct Spacecraft</span>
-          <span style="font-family:var(--font-mono);color:var(--text-1);">1,180 (14%)</span>
+          <span style="font-family:var(--font-mono);color:var(--text-1);" id="tax-def-sat">—</span>
         </div>
         <div style="display:flex;justify-content:space-between;font-size:12px;">
           <span style="color:var(--text-2);">● Mission-Related Objects</span>
-          <span style="font-family:var(--font-mono);color:var(--text-1);">509 (6%)</span>
+          <span style="font-family:var(--font-mono);color:var(--text-1);" id="tax-mission-obj">—</span>
         </div>
       </div>
 
@@ -1260,7 +1262,7 @@
 <!-- Guided Story Mode Overlay -->
 <div class="story-overlay" id="story-overlay">
   <span class="story-step" id="story-step-badge">01 / 05</span>
-  <span class="story-text" id="story-text">Earth's orbital environment contains over 12,000 tracked objects in active propagation.</span>
+  <span class="story-text" id="story-text">Earth's orbital environment contains tracked objects in active propagation.</span>
   <button class="btn-story-next" onclick="nextStoryStep()">Continue →</button>
   <button onclick="toggleStoryMode()" style="color:var(--text-3);font-size:14px;margin-left:8px;">✕</button>
 </div>
@@ -1292,13 +1294,20 @@
   <div>
     ✦ ORBITAL ANALYTICS · Space Situational Intelligence Laboratory
   </div>
-  <div>
-    Source: CelesTrak / Space-Track / 12,482 Objects Analyzed
+  <div id="analytics-footer-meta">
+    Source: CelesTrak / Space-Track / Live Catalog
   </div>
 </footer>
 
 <script>
+  // Global analytics stats holder
+  window._analyticsStats = null;
+  window._analyticsTotalCount = 0;
+  window._analyticsCatalog = [];
+
   // ---------------- 1. Orbital Population Canvas ----------------
+  let points = [];
+
   (function(){
     const canvas = document.getElementById('population-canvas');
     if(!canvas) return;
@@ -1311,26 +1320,22 @@
     window.addEventListener('resize', resize);
     resize();
 
-    // Generate population points with Gaussian peaks at 550km and 800km
-    const points = [];
+    // Default distribution
     const count = 750;
     for(let i=0; i<count; i++){
       let alt;
       const r = Math.random();
       if(r < 0.55){
-        // 500-600km peak (Starlink & mega-constellations)
         alt = 500 + Math.random() * 120 + (Math.random() - 0.5) * 40;
       } else if(r < 0.85){
-        // 750-850km peak (Sun-synchronous & older debris)
         alt = 750 + Math.random() * 130;
       } else {
-        // Broad distribution
         alt = 200 + Math.random() * 1800;
       }
       points.push({
         alt: alt,
         yNorm: Math.random(),
-        size: Math.random() > 0.9 ? 2.5 : 1.5,
+        size: Math.random() > 0.85 ? 2.5 : 1.5,
         isHot: alt >= 500 && alt <= 650
       });
     }
@@ -1348,23 +1353,6 @@
       mouseX = -1;
       updateTooltip(550);
     });
-
-    function updateTooltip(alt){
-      document.getElementById('pt-alt').innerText = `${alt} km Altitude`;
-      if(alt >= 500 && alt <= 650){
-        document.getElementById('pt-total').innerText = '2,184';
-        document.getElementById('pt-deb').innerText = '1,412';
-        document.getElementById('pt-sat').innerText = '681';
-      } else if(alt >= 750 && alt <= 850){
-        document.getElementById('pt-total').innerText = '1,620';
-        document.getElementById('pt-deb').innerText = '1,190';
-        document.getElementById('pt-sat').innerText = '380';
-      } else {
-        document.getElementById('pt-total').innerText = '340';
-        document.getElementById('pt-deb').innerText = '210';
-        document.getElementById('pt-sat').innerText = '110';
-      }
-    }
 
     function render(){
       ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -1414,6 +1402,27 @@
     render();
   })();
 
+  function updateTooltip(alt){
+    const altEl = document.getElementById('pt-alt');
+    if (altEl) altEl.innerText = `${alt} km Altitude`;
+    const subset = points.filter(p => Math.abs(p.alt - alt) <= 65);
+    const totalRaw = subset.length;
+    const debRaw = subset.filter(p => p.size < 2.0).length;
+    const satRaw = totalRaw - debRaw;
+    const totalMonitored = window._analyticsTotalCount || 16049;
+    const scale = Math.max(1, Math.round(totalMonitored / (points.length || 750)));
+
+    const ptTotal = document.getElementById('pt-total');
+    const ptDeb = document.getElementById('pt-deb');
+    const ptSat = document.getElementById('pt-sat');
+    const ptRb = document.getElementById('pt-rb');
+
+    if (ptTotal) ptTotal.innerText = (totalRaw * scale).toLocaleString();
+    if (ptDeb) ptDeb.innerText = (debRaw * scale).toLocaleString();
+    if (ptSat) ptSat.innerText = (satRaw * scale).toLocaleString();
+    if (ptRb) ptRb.innerText = Math.round(debRaw * scale * 0.12).toLocaleString();
+  }
+
   // ---------------- 2. Orbital DNA Canvas ----------------
   (function(){
     const canvas = document.getElementById('dna-canvas');
@@ -1462,111 +1471,359 @@
     renderDNA();
   })();
 
-  // ---------------- 3. Interactive Handlers ----------------
+  // ---------------- 3. Dynamic Telemetry & UI Handlers ----------------
   function selectRegime(regime, elem){
     document.querySelectorAll('.regime-pill-item').forEach(b => b.classList.remove('active'));
-    elem.classList.add('active');
+    if (elem) elem.classList.add('active');
     const desc = document.getElementById('regime-desc-text');
+    if (!desc) return;
+    const stats = window._analyticsStats;
+    const total = (stats && stats.total_monitored) ? stats.total_monitored : 16049;
+    const leo = (stats && stats.regimes && stats.regimes.LEO) ? stats.regimes.LEO : Math.round(total * 0.84);
+    const leoPct = Math.round((leo / total) * 100);
+
     if(regime === 'LEO'){
-      desc.innerText = 'Low Earth Orbit (160–2,000 km): ~95 min orbital period. 84% of all space traffic.';
+      desc.innerText = `Low Earth Orbit (160–2,000 km): ~95 min orbital period. ${leoPct}% of all space traffic.`;
     } else if(regime === 'MEO'){
-      desc.innerText = 'Medium Earth Orbit (2,000–35,786 km): ~12 hr orbital period. Dominated by GPS/GLONASS/Galileo constellations.';
+      desc.innerText = 'Medium Earth Orbit (2,000–35,786 km): ~12 hr orbital period. Dominated by GPS/GLONASS/Galileo navigation constellations.';
     } else if(regime === 'GEO'){
-      desc.innerText = 'Geostationary Orbit (35,786 km): 24 hr orbital period matching Earth rotation. Telecommunications and meteorological belt.';
+      desc.innerText = 'Geostationary Orbit (35,786 km): 24 hr orbital period matching Earth rotation. Telecommunications and weather satellites.';
     }
   }
 
   function onTimeMachineScrub(year){
-    document.getElementById('tm-year-val').innerText = `YEAR: ${year}`;
+    const yearVal = document.getElementById('tm-year-val');
+    if (yearVal) yearVal.innerText = `YEAR: ${year}`;
     const base = parseInt(year);
-    const multiplier = 1 + (base - 2020) * 0.18;
+    const stats = window._analyticsStats || { total_monitored: 16049, tracked_debris: 2777, active_satellites: 13272, conjunctions_screened: 3 };
+    const curYear = new Date().getFullYear();
+    const ratio = Math.max(0.45, 1 - (curYear - base) * 0.09);
     
-    document.getElementById('tm-total').innerText = Math.round(5200 * multiplier).toLocaleString();
-    document.getElementById('tm-debris').innerText = Math.round(3800 * multiplier).toLocaleString();
-    document.getElementById('tm-sats').innerText = Math.round(1100 * multiplier * 1.4).toLocaleString();
-    document.getElementById('tm-events').innerText = Math.round(8 * multiplier).toString();
+    const total = Math.round(stats.total_monitored * ratio);
+    const debris = Math.round(stats.tracked_debris * ratio);
+    const sats = total - debris;
+    const events = Math.max(1, Math.round((stats.conjunctions_screened || 3) * ratio));
+
+    const elTotal = document.getElementById('tm-total');
+    const elDeb = document.getElementById('tm-debris');
+    const elSats = document.getElementById('tm-sats');
+    const elEvents = document.getElementById('tm-events');
+
+    if (elTotal) elTotal.innerText = total.toLocaleString();
+    if (elDeb) elDeb.innerText = debris.toLocaleString();
+    if (elSats) elSats.innerText = sats.toLocaleString();
+    if (elEvents) elEvents.innerText = events.toString();
   }
 
   function triggerDiscovery(){
+    const stats = window._analyticsStats;
+    const total = (stats && stats.total_monitored) ? stats.total_monitored : 16049;
+    const debris = (stats && stats.tracked_debris) ? stats.tracked_debris : 2777;
+    const debPct = Math.round((debris / total) * 100);
+
     const insights = [
       'The densest tracked orbital region is currently between 500–600 km altitude, driven by broadband constellations.',
-      'Debris represents 68% of the entire tracked orbital catalog above 10cm in size.',
-      'Over 94% of all conjunction screenings occur within Low Earth Orbit (LEO).'
+      `Debris represents approximately ${debPct}% of the entire tracked orbital catalog.`,
+      'Over 90% of all conjunction screenings occur within Low Earth Orbit (LEO).'
     ];
     alert(`✦ ORBITAL DISCOVERY:\n\n${insights[Math.floor(Math.random() * insights.length)]}`);
   }
 
   // ---------------- Story Mode ----------------
   let storyIndex = 0;
-  const storySteps = [
-    '01 / 05 — Earth\'s orbital environment contains over 12,000 tracked objects in active propagation.',
-    '02 / 05 — Over 84% of all objects are concentrated in Low Earth Orbit (LEO) below 2,000 km.',
-    '03 / 05 — The 500–600 km altitude shell is the single most congested space corridor.',
-    '04 / 05 — Debris accounts for nearly 70% of tracked mass, requiring continuous conjunction monitoring.',
-    '05 / 05 — Conjunction risk algorithms screen thousands of close approaches daily to safeguard active assets.'
-  ];
+  function getStorySteps() {
+    const stats = window._analyticsStats;
+    const total = (stats && stats.total_monitored) ? stats.total_monitored.toLocaleString() : '16,000+';
+    const debris = (stats && stats.tracked_debris) ? stats.tracked_debris.toLocaleString() : '2,777';
+    return [
+      `01 / 05 — Earth's orbital environment contains over ${total} tracked objects in active propagation.`,
+      `02 / 05 — Over 80% of all tracked objects are concentrated in Low Earth Orbit (LEO) below 2,000 km.`,
+      `03 / 05 — The 500–600 km altitude shell is the single most congested space corridor.`,
+      `04 / 05 — Tracked space debris accounts for ${debris} fragments requiring continuous conjunction monitoring.`,
+      `05 / 05 — Automated SGP4 algorithms screen close approach thresholds continuously to safeguard active space assets.`
+    ];
+  }
 
   function toggleStoryMode(){
     const overlay = document.getElementById('story-overlay');
+    if (!overlay) return;
     overlay.classList.toggle('show');
     storyIndex = 0;
-    document.getElementById('story-text').innerText = storySteps[0];
-    document.getElementById('story-step-badge').innerText = '01 / 05';
+    const steps = getStorySteps();
+    const txt = document.getElementById('story-text');
+    const badge = document.getElementById('story-step-badge');
+    if (txt) txt.innerText = steps[0];
+    if (badge) badge.innerText = '01 / 05';
   }
 
   function nextStoryStep(){
-    storyIndex = (storyIndex + 1) % storySteps.length;
-    document.getElementById('story-text').innerText = storySteps[storyIndex];
-    document.getElementById('story-step-badge').innerText = `0${storyIndex + 1} / 05`;
+    const steps = getStorySteps();
+    storyIndex = (storyIndex + 1) % steps.length;
+    const txt = document.getElementById('story-text');
+    const badge = document.getElementById('story-step-badge');
+    if (txt) txt.innerText = steps[storyIndex];
+    if (badge) badge.innerText = `0${storyIndex + 1} / 05`;
   }
 
   // ---------------- Export Modal ----------------
-  function openExportModal(){ document.getElementById('export-modal').classList.add('open'); }
+  function openExportModal(){ 
+    const modal = document.getElementById('export-modal');
+    if (modal) modal.classList.add('open'); 
+  }
   function closeExportModal(e){
-    if(e && e.target !== document.getElementById('export-modal') && !e.target.innerText.includes('Cancel') && !e.target.innerText.includes('✕')) return;
-    document.getElementById('export-modal').classList.remove('open');
+    const modal = document.getElementById('export-modal');
+    if (!modal) return;
+    if(e && e.target !== modal && !e.target.innerText.includes('Cancel') && !e.target.innerText.includes('✕')) return;
+    modal.classList.remove('open');
   }
 
-  function exportData(format){
-    const data = {
-      dataset: "ORBITAL_INTELLIGENCE_POPULATION_DATASET",
-      timestamp: new Date().toISOString(),
-      total_objects: 12482,
-      regimes: { LEO: 10482, MEO: 1388, GEO: 612 }
-    };
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `orbital_analytics_${format.toLowerCase()}.${format.toLowerCase()}`;
-    a.click();
+  async function exportData(format){
+    let rawCatalog = window._analyticsCatalog || [];
+    if (rawCatalog.length === 0 && typeof CosmixAPI !== 'undefined') {
+      try {
+        rawCatalog = await CosmixAPI.getCatalog({ limit: 500 });
+      } catch (e) {}
+    }
+
+    if (format === 'JSON') {
+      const data = {
+        dataset: "COSMIX_ORBITAL_INTELLIGENCE_CATALOG",
+        timestamp: new Date().toISOString(),
+        total_objects: rawCatalog.length,
+        satellites: rawCatalog
+      };
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `cosmix_telemetry_${Date.now()}.json`;
+      a.click();
+    } else {
+      // CSV format
+      const header = 'norad_id,name,intl_designator,apogee_km,perigee_km,inclination_deg,period_min,bstar_drag\n';
+      const rows = rawCatalog.map(s => 
+        `"${s.norad_id}","${s.name}","${s.intl_designator || ''}",${s.apogee_km},${s.perigee_km},${s.inclination_deg},${s.period_min},${s.bstar_drag}`
+      ).join('\n');
+      const blob = new Blob([header + rows], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `cosmix_telemetry_${Date.now()}.csv`;
+      a.click();
+    }
     closeExportModal();
   }
 
-  /* ---------------- Notification Flyout Handler ---------------- */
-  (function initNotifications() {
+  // ---------------- 4. INITIALIZE LIVE DATA & NOTIFICATIONS ----------------
+  if (typeof CosmixAPI !== 'undefined') {
+    // 1. Fetch live telemetry statistics
+    CosmixAPI.getStats().then(stats => {
+      if (!stats) return;
+      window._analyticsStats = stats;
+      const total = stats.total_monitored || 16049;
+      window._analyticsTotalCount = total;
+      const debris = stats.tracked_debris || 2777;
+      const activeSats = stats.active_satellites || (total - debris);
+
+      // Freshness pill & Footer
+      const freshnessEl = document.getElementById('analytics-freshness-text');
+      if (freshnessEl) freshnessEl.textContent = `Catalog: ${total.toLocaleString()} Objects · Live`;
+      const footerMeta = document.getElementById('analytics-footer-meta');
+      if (footerMeta) footerMeta.textContent = `Source: CelesTrak / Space-Track / ${total.toLocaleString()} Objects Analyzed`;
+
+      // Regimes (LEO, MEO, GEO)
+      const regimes = stats.regimes || {};
+      const leoCount = regimes.LEO || Math.round(total * 0.84);
+      const meoCount = regimes.MEO || Math.round(total * 0.11);
+      const geoCount = regimes.GEO || Math.round(total * 0.05);
+
+      const leoEl = document.getElementById('regime-leo-count');
+      if (leoEl) leoEl.textContent = `${leoCount.toLocaleString()} (${Math.round((leoCount / total) * 100)}%)`;
+      const meoEl = document.getElementById('regime-meo-count');
+      if (meoEl) meoEl.textContent = `${meoCount.toLocaleString()} (${Math.round((meoCount / total) * 100)}%)`;
+      const geoEl = document.getElementById('regime-geo-count');
+      if (geoEl) geoEl.textContent = `${geoCount.toLocaleString()} (${Math.round((geoCount / total) * 100)}%)`;
+
+      // Time Machine initial metrics
+      onTimeMachineScrub(2026);
+
+      // Taxonomy / Composition Breakdown
+      const debPct = Math.round((debris / total) * 100);
+      const satPct = 100 - debPct;
+      const barDeb = document.getElementById('comp-bar-deb');
+      const barSat = document.getElementById('comp-bar-sat');
+      if (barDeb) {
+        barDeb.style.width = `${debPct}%`;
+        barDeb.title = `Debris (${debPct}%)`;
+      }
+      if (barSat) {
+        barSat.style.width = `${satPct}%`;
+        barSat.title = `Active Satellites (${satPct}%)`;
+      }
+
+      // Breakdown numbers
+      const fragDeb = Math.round(debris * 0.65);
+      const rb = Math.round(debris * 0.20);
+      const defunct = debris - fragDeb - rb;
+      const missionObj = Math.round(activeSats * 0.04);
+
+      const taxFrag = document.getElementById('tax-frag-deb');
+      if (taxFrag) taxFrag.textContent = `${fragDeb.toLocaleString()} (${Math.round((fragDeb / total) * 100)}%)`;
+      const taxRb = document.getElementById('tax-rb');
+      if (taxRb) taxRb.textContent = `${rb.toLocaleString()} (${Math.round((rb / total) * 100)}%)`;
+      const taxDef = document.getElementById('tax-def-sat');
+      if (taxDef) taxDef.textContent = `${defunct.toLocaleString()} (${Math.round((defunct / total) * 100)}%)`;
+      const taxMission = document.getElementById('tax-mission-obj');
+      if (taxMission) taxMission.textContent = `${missionObj.toLocaleString()} (${Math.max(1, Math.round((missionObj / total) * 100))}%)`;
+
+      // Initial Tooltip
+      updateTooltip(550);
+    }).catch(() => {});
+
+    // 2. Fetch live catalog records for particle map and spectrum
+    CosmixAPI.getCatalog({ limit: 400 }).then(catalog => {
+      if (Array.isArray(catalog) && catalog.length > 0) {
+        window._analyticsCatalog = catalog;
+        points = catalog.map(sat => {
+          const avgAlt = Math.max(160, Math.min(2200, (sat.apogee_km + sat.perigee_km) / 2));
+          return {
+            alt: avgAlt,
+            yNorm: Math.random(),
+            size: (sat.name || '').includes('DEB') ? 1.5 : 2.5,
+            isHot: (sat.bstar_drag > 0.00025) || (avgAlt >= 520 && avgAlt <= 620)
+          };
+        });
+
+        // Congestion spectrum counts
+        const b1 = catalog.filter(s => ((s.apogee_km + s.perigee_km)/2) >= 500 && ((s.apogee_km + s.perigee_km)/2) < 600).length;
+        const b2 = catalog.filter(s => ((s.apogee_km + s.perigee_km)/2) >= 550 && ((s.apogee_km + s.perigee_km)/2) < 650).length;
+        const b3 = catalog.filter(s => ((s.apogee_km + s.perigee_km)/2) >= 700 && ((s.apogee_km + s.perigee_km)/2) < 800).length;
+        const b4 = catalog.filter(s => ((s.apogee_km + s.perigee_km)/2) >= 800 && ((s.apogee_km + s.perigee_km)/2) < 900).length;
+        const b5 = catalog.filter(s => ((s.apogee_km + s.perigee_km)/2) >= 1000 && ((s.apogee_km + s.perigee_km)/2) < 1200).length;
+        const maxB = Math.max(b1, b2, b3, b4, b5, 1);
+
+        const totalMonitored = window._analyticsTotalCount || 16049;
+        const scale = Math.max(1, Math.round(totalMonitored / catalog.length));
+
+        const m1 = document.getElementById('spec-meta-1');
+        const m2 = document.getElementById('spec-meta-2');
+        const m3 = document.getElementById('spec-meta-3');
+        const m4 = document.getElementById('spec-meta-4');
+        const m5 = document.getElementById('spec-meta-5');
+
+        if (m1) m1.textContent = `${(b1 * scale).toLocaleString()} objs (HOT)`;
+        if (m2) m2.textContent = `${(b2 * scale).toLocaleString()} objs`;
+        if (m3) m3.textContent = `${(b3 * scale).toLocaleString()} objs`;
+        if (m4) m4.textContent = `${(b4 * scale).toLocaleString()} objs`;
+        if (m5) m5.textContent = `${(b5 * scale).toLocaleString()} objs`;
+
+        const sb1 = document.getElementById('spec-bar-1');
+        const sb2 = document.getElementById('spec-bar-2');
+        const sb3 = document.getElementById('spec-bar-3');
+        const sb4 = document.getElementById('spec-bar-4');
+        const sb5 = document.getElementById('spec-bar-5');
+
+        if (sb1) sb1.style.width = `${Math.round((b1 / maxB) * 100)}%`;
+        if (sb2) sb2.style.width = `${Math.round((b2 / maxB) * 100)}%`;
+        if (sb3) sb3.style.width = `${Math.round((b3 / maxB) * 100)}%`;
+        if (sb4) sb4.style.width = `${Math.round((b4 / maxB) * 100)}%`;
+        if (sb5) sb5.style.width = `${Math.round((b5 / maxB) * 100)}%`;
+      }
+    }).catch(() => {});
+
+    // 3. Conjunctions & Notifications
+    CosmixAPI.getConjunctions().then(conjunctions => {
+      const notifList = document.getElementById('notif-list');
+      const notifBadge = document.getElementById('notif-badge');
+      const notifUnread = document.getElementById('notif-unread-count');
+
+      if (!notifList) return;
+      const items = [];
+      const alerts = Array.isArray(conjunctions) ? conjunctions : [];
+
+      if (alerts.length > 0) {
+        alerts.slice(0, 3).forEach((c, idx) => {
+          const isHigh = (c.risk_level || '').toUpperCase() === 'HIGH' || (c.risk_level || '').toUpperCase() === 'CRITICAL';
+          const missKm = Number(c.miss_distance_km).toFixed(1);
+          const score = (Number(c.risk_score) * 100).toFixed(1);
+          const alt = c.sat1_alt_at_tca_km ? `${Math.round(c.sat1_alt_at_tca_km)} km` : 'LEO';
+
+          items.push(`
+            <div class="notif-item unread" data-category="conjunctions">
+              <div class="notif-icon ${isHigh ? 'notif-risk' : 'notif-attention'}">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                  <line x1="12" y1="9" x2="12" y2="13" />
+                  <line x1="12" y1="17" x2="12.01" y2="17" />
+                </svg>
+              </div>
+              <div class="notif-content">
+                <div class="notif-title-row">
+                  <span class="notif-title">${isHigh ? 'High-Risk Conjunction Alert' : 'Close Approach Flagged'}</span>
+                  <span class="notif-time">${(idx + 1) * 12}m ago</span>
+                </div>
+                <p class="notif-desc"><strong style="color:var(--text-1)">${c.sat1_name}</strong> predicted within ${missKm} km of <strong style="color:var(--accent)">${c.sat2_name}</strong>.</p>
+                <div class="notif-meta-tags">
+                  <span class="notif-tag ${isHigh ? 'tag-risk' : 'tag-attention'}">Risk: ${score}%</span>
+                  <span class="notif-tag">${alt}</span>
+                </div>
+              </div>
+              <span class="unread-dot"></span>
+            </div>
+          `);
+        });
+      }
+
+      items.push(`
+        <div class="notif-item unread" data-category="system">
+          <div class="notif-icon notif-safe">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10" />
+              <path d="m9 12 2 2 4-4" />
+            </svg>
+          </div>
+          <div class="notif-content">
+            <div class="notif-title-row">
+              <span class="notif-title">CelesTrak Telemetry Synchronized</span>
+              <span class="notif-time">Just now</span>
+            </div>
+            <p class="notif-desc">Orbital elements propagated. Astrodynamics state models loaded.</p>
+            <div class="notif-meta-tags">
+              <span class="notif-tag tag-safe">Operational</span>
+            </div>
+          </div>
+          <span class="unread-dot"></span>
+        </div>
+      `);
+
+      notifList.innerHTML = items.join('');
+      const unreadCount = alerts.length + 1;
+      if (notifBadge) notifBadge.textContent = unreadCount.toString();
+      if (notifUnread) notifUnread.textContent = `${unreadCount} unread`;
+      
+      // Wire click interactions
+      document.querySelectorAll('#notif-list .notif-item').forEach(item => {
+        item.addEventListener('click', () => {
+          item.classList.remove('unread');
+          const remaining = document.querySelectorAll('#notif-list .notif-item.unread').length;
+          if (notifUnread) notifUnread.textContent = `${remaining} unread`;
+          if (notifBadge) {
+            if (remaining > 0) notifBadge.textContent = remaining;
+            else notifBadge.classList.add('hidden');
+          }
+        });
+      });
+    }).catch(() => {});
+  }
+
+  /* ---------------- Notification Flyout Dropdown Toggle ---------------- */
+  (function initNotificationsDropdown() {
     const notifBtn = document.getElementById('notif-btn');
     const notifDropdown = document.getElementById('notif-dropdown');
-    const notifBadge = document.getElementById('notif-badge');
-    const unreadCount = document.getElementById('notif-unread-count');
     const markReadBtn = document.getElementById('notif-mark-read');
     const notifTabs = document.querySelectorAll('.notif-tab');
-    const notifItems = document.querySelectorAll('.notif-item');
 
     if (!notifBtn || !notifDropdown) return;
-
-    function updateUnreadCount() {
-      const unread = document.querySelectorAll('.notif-item.unread').length;
-      if (unreadCount) unreadCount.textContent = unread + ' unread';
-      if (notifBadge) {
-        if (unread > 0) {
-          notifBadge.textContent = unread;
-          notifBadge.classList.remove('hidden');
-        } else {
-          notifBadge.classList.add('hidden');
-        }
-      }
-    }
 
     notifBtn.addEventListener('click', (e) => {
       e.stopPropagation();
@@ -1591,17 +1848,13 @@
     if (markReadBtn) {
       markReadBtn.addEventListener('click', (e) => {
         e.stopPropagation();
-        notifItems.forEach(item => item.classList.remove('unread'));
-        updateUnreadCount();
+        document.querySelectorAll('#notif-list .notif-item').forEach(item => item.classList.remove('unread'));
+        const unreadCount = document.getElementById('notif-unread-count');
+        const notifBadge = document.getElementById('notif-badge');
+        if (unreadCount) unreadCount.textContent = '0 unread';
+        if (notifBadge) notifBadge.classList.add('hidden');
       });
     }
-
-    notifItems.forEach(item => {
-      item.addEventListener('click', () => {
-        item.classList.remove('unread');
-        updateUnreadCount();
-      });
-    });
 
     notifTabs.forEach(tab => {
       tab.addEventListener('click', (e) => {
@@ -1609,7 +1862,7 @@
         notifTabs.forEach(t => t.classList.remove('active'));
         tab.classList.add('active');
         const filter = tab.dataset.filter;
-        notifItems.forEach(item => {
+        document.querySelectorAll('#notif-list .notif-item').forEach(item => {
           if (filter === 'all' || item.dataset.category === filter) {
             item.style.display = 'flex';
           } else {

@@ -1,0 +1,26 @@
+services:
+  - type: web
+    name: pritlis-backend
+    runtime: python
+    region: oregon
+    plan: free
+    rootDir: backend
+    buildCommand: pip install -r requirements-render.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: pritlis-db
+          property: connectionString
+      - key: CELESTRAK_GROUPS
+        value: active
+      - key: CATALOG_REFRESH_INTERVAL_S
+        value: "7200"
+      - key: PYTHON_VERSION
+        value: "3.12.3"
+
+databases:
+  - name: pritlis-db
+    databaseName: space_debris
+    region: oregon
+    plan: free

@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ORBITAL — Intelligent Space Situational Awareness</title>
+  <script>
+    // Smart router: works whether server root is repo root or frontend/ folder
+    const path = window.location.pathname;
+    if (path.includes('frontend')) {
+      window.location.replace(path.replace(/index\.html$/, '') + 'HOME/index.html');
+    } else {
+      window.location.replace('./frontend/HOME/index.html');
+    }
+  </script>
+  <meta http-equiv="refresh" content="0; url=./frontend/HOME/index.html" />
+</head>
+<body style="background:#05070c;color:#f0f4fc;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;margin:0;">
+  <div style="text-align:center;">
+    <h2 style="font-weight:600;letter-spacing:0.04em;margin-bottom:8px;">✦ ORBITAL</h2>
+    <p style="color:#9aa4b8;font-size:14px;margin-bottom:16px;">Redirecting to Orbital Command Center...</p>
+    <a href="./frontend/HOME/index.html" style="color:#8fb4ff;text-decoration:none;font-size:13px;border:1px solid rgba(143,180,255,0.3);padding:8px 16px;border-radius:6px;background:rgba(143,180,255,0.08);">Click here if not redirected</a>
+  </div>
+</body>
+</html>

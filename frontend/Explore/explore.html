@@ -16,6 +16,60 @@
   <link href="https://cesium.com/downloads/cesiumjs/releases/1.119/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
   <script src="https://cesium.com/downloads/cesiumjs/releases/1.119/Build/Cesium/Cesium.js"></script>
 
+  <!-- Unified API Client -->
+  <script src="../assets/js/api.js"></script>
+
+  <script>
+    function activateTab(tabId) {
+      if (!tabId) tabId = 'orbital-map';
+      const map = {
+        'orbital-map': 'panel-orbital-map',
+        'satellites': 'panel-satellites',
+        'debris': 'panel-debris',
+        'search': 'panel-search'
+      };
+      const targetId = map[tabId] || 'panel-orbital-map';
+
+      document.querySelectorAll('.sidebar-link').forEach(link => {
+        const linkTab = link.getAttribute('data-tab');
+        link.classList.toggle('active', linkTab === tabId);
+      });
+
+      document.querySelectorAll('.tab-panel').forEach(panel => {
+        const isTarget = (panel.id === targetId);
+        panel.classList.toggle('active', isTarget);
+        panel.style.display = isTarget ? 'block' : 'none';
+      });
+
+      if (tabId === 'orbital-map') {
+        if (!window.mapInitialized && typeof window.initCesiumMap === 'function') {
+          window.initCesiumMap();
+        }
+        if (window.viewer && window.viewer.resize) {
+          window.viewer.resize();
+        }
+      } else if (tabId === 'satellites') {
+        if (typeof window.loadLiveSatellites === 'function') {
+          window.loadLiveSatellites();
+        }
+      } else if (tabId === 'debris') {
+        if (typeof window.loadLiveDebris === 'function') {
+          window.loadLiveDebris();
+        }
+        if (typeof window.updateDebrisNoticeBanner === 'function') {
+          window.updateDebrisNoticeBanner();
+        }
+      }
+
+      try {
+        const u = new URL(window.location);
+        u.searchParams.set('tab', tabId);
+        window.history.replaceState({ tab: tabId }, '', u);
+      } catch (e) {}
+    }
+    window.activateTab = activateTab;
+  </script>
+
   <style>
     /* ============================================================
      EXPLORE PAGE LAYOUT & COMPONENTS
@@ -75,6 +129,11 @@
       border-left: 3px solid transparent;
       position: relative;
       font-family: var(--font-body);
+      user-select: none;
+    }
+
+    .sidebar-link * {
+      pointer-events: none;
     }
 
     .sidebar-link:hover {
@@ -457,11 +516,38 @@
       display: flex;
       align-items: center;
       gap: 10px;
-      flex-wrap: wrap;
-      margin-bottom: 24px;
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      overflow-y: hidden;
+      padding-bottom: 10px;
+      margin-bottom: 20px;
+      scrollbar-width: thin;
+      scrollbar-color: var(--accent-line) rgba(255, 255, 255, 0.04);
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .filters-row::-webkit-scrollbar {
+      height: 5px;
+    }
+
+    .filters-row::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 99px;
+    }
+
+    .filters-row::-webkit-scrollbar-thumb {
+      background: var(--hairline-strong);
+      border-radius: 99px;
+      transition: background .2s ease;
+    }
+
+    .filters-row::-webkit-scrollbar-thumb:hover {
+      background: var(--accent-line);
     }
 
     .filter-pill {
+      flex-shrink: 0;
+      white-space: nowrap;
       padding: 8px 16px;
       border-radius: 8px;
       font-size: 12.5px;
@@ -488,9 +574,12 @@
 
     .filter-spacer {
       flex: 1;
+      min-width: 16px;
     }
 
     .total-count-pill {
+      flex-shrink: 0;
+      white-space: nowrap;
       font-size: 12px;
       color: var(--text-3);
       font-weight: 600;
@@ -1048,7 +1137,7 @@
      HEADER NAVIGATION
 ============================================================ -->
   <header id="header">
-    <a class="brand" href="home.html"><span class="mark">✦</span> ORBITAL</a>
+    <a class="brand" href="../HOME/index.html"><span class="mark">✦</span> ORBITAL</a>
     <nav class="links">
       <a href="../HOME/index.html">Home</a>
       <a href="explore.html" class="active">Explore</a>
@@ -1082,139 +1171,45 @@
           </div>
 
           <div class="notif-list" id="notif-list">
-            <!-- Notification Item 1: Critical Conjunction -->
-            <div class="notif-item unread" data-category="conjunctions">
-              <div class="notif-icon notif-risk">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
-                  <line x1="12" y1="9" x2="12" y2="13" />
-                  <line x1="12" y1="17" x2="12.01" y2="17" />
-                </svg>
-              </div>
-              <div class="notif-content">
-                <div class="notif-title-row">
-                  <span class="notif-title">High-Risk Conjunction Alert</span>
-                  <span class="notif-time">14m ago</span>
-                </div>
-                <p class="notif-desc"><strong style="color:var(--text-1)">COSMOS 1408 DEB</strong> predicted within 3.2
-                  km of <strong style="color:var(--accent)">ISS (ZARYA)</strong> in 18h.</p>
-                <div class="notif-meta-tags">
-                  <span class="notif-tag tag-risk">Pc: 4.8e-4</span>
-                  <span class="notif-tag">LEO (418 km)</span>
-                </div>
-              </div>
-              <span class="unread-dot"></span>
-            </div>
-
-            <!-- Notification Item 2: Solar Activity -->
-            <div class="notif-item unread" data-category="system">
-              <div class="notif-icon notif-attention">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <circle cx="12" cy="12" r="5" />
-                  <line x1="12" y1="1" x2="12" y2="3" />
-                  <line x1="12" y1="21" x2="12" y2="23" />
-                  <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
-                  <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
-                  <line x1="1" y1="12" x2="3" y2="12" />
-                  <line x1="21" y1="12" x2="23" y2="12" />
-                  <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
-                  <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
-                </svg>
-              </div>
-              <div class="notif-content">
-                <div class="notif-title-row">
-                  <span class="notif-title">Space Weather Geomagnetic Storm</span>
-                  <span class="notif-time">1h ago</span>
-                </div>
-                <p class="notif-desc">G2-class coronal mass ejection impacting upper atmospheric density; orbital decay
-                  acceleration elevated.</p>
-                <div class="notif-meta-tags">
-                  <span class="notif-tag tag-attention">Kp Index: 6.2</span>
-                  <span class="notif-tag">Atmospheric Drag</span>
-                </div>
-              </div>
-              <span class="unread-dot"></span>
-            </div>
-
-            <!-- Notification Item 3: Maneuver Completed -->
-            <div class="notif-item unread" data-category="conjunctions">
-              <div class="notif-icon notif-safe">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <circle cx="12" cy="12" r="10" />
-                  <path d="m9 12 2 2 4-4" />
-                </svg>
-              </div>
-              <div class="notif-content">
-                <div class="notif-title-row">
-                  <span class="notif-title">Collision Avoidance Burn Executed</span>
-                  <span class="notif-time">3h ago</span>
-                </div>
-                <p class="notif-desc"><strong style="color:var(--text-1)">STARLINK-3021</strong> performed autonomous
-                  delta-V burn (+1.2 m/s); miss distance increased to 12.8 km.</p>
-                <div class="notif-meta-tags">
-                  <span class="notif-tag tag-safe">Safe Clearance</span>
-                  <span class="notif-tag">Delta-V: +1.2 m/s</span>
-                </div>
-              </div>
-              <span class="unread-dot"></span>
-            </div>
-
-            <!-- Notification Item 4: New Catalog Ingestion (Read) -->
-            <div class="notif-item" data-category="system">
-              <div class="notif-icon notif-accent">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <circle cx="12" cy="12" r="3" />
-                  <path
-                    d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
-                </svg>
-              </div>
-              <div class="notif-content">
-                <div class="notif-title-row">
-                  <span class="notif-title">Catalog TLE Bulk Synchronization</span>
-                  <span class="notif-time">6h ago</span>
-                </div>
-                <p class="notif-desc">Propagated 12,482 state vectors from 18th Space Defense Squadron feed. 14 new
-                  fragmentation pieces cataloged.</p>
-                <div class="notif-meta-tags">
-                  <span class="notif-tag">Epoch: 2026.238</span>
-                </div>
-              </div>
-            </div>
+            <!-- Dynamically populated -->
           </div>
 
           <div class="notif-footer">
-            <a href="explore.html" class="notif-footer-link">Explore Conjunction Monitor →</a>
+            <a href="../MONITOR/montior.html" class="notif-footer-link">Explore Conjunction Monitor →</a>
           </div>
         </div>
       </div>
-      <div class="avatar">JS</div>
+
+      <div class="user-profile">
+        <div class="avatar" id="nav-avatar">?</div>
+      </div>
     </div>
   </header>
 
   <!-- ============================================================
-     EXPLORE MAIN LAYOUT
+     EXPLORE LAYOUT: SIDEBAR + MAIN CONTENT
 ============================================================ -->
   <div class="explore-layout">
 
     <!-- Sidebar Tabs Navigation -->
     <aside class="sidebar" id="sidebar">
       <div class="sidebar-section-title">Explore</div>
-      <button class="sidebar-link active" data-tab="orbital-map">
+      <button class="sidebar-link active" data-tab="orbital-map" onclick="activateTab('orbital-map')">
         <span class="nav-icon">🌍</span>
         Orbital Map
       </button>
-      <button class="sidebar-link" data-tab="satellites">
+      <button class="sidebar-link" data-tab="satellites" onclick="activateTab('satellites')">
         <span class="nav-icon">🛰️</span>
         Satellites
-        <span class="badge">8,061</span>
+        <span class="badge" id="sidebar-sat-badge">—</span>
       </button>
-      <button class="sidebar-link" data-tab="debris">
+      <button class="sidebar-link" data-tab="debris" onclick="activateTab('debris')">
         <span class="nav-icon">☄️</span>
         Debris
-        <span class="badge">4,421</span>
+        <span class="badge" id="sidebar-deb-badge">—</span>
       </button>
       <div class="sidebar-divider"></div>
-      <button class="sidebar-link" data-tab="search">
+      <button class="sidebar-link" data-tab="search" onclick="activateTab('search')">
         <span class="nav-icon">🔎</span>
         Search Object
       </button>
@@ -1258,7 +1253,7 @@
                 </svg>
                 Debris
               </button>
-              <button class="map-toggle-btn" id="toggle-approaches">
+              <button class="map-toggle-btn active" id="toggle-approaches">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
                   <path d="M6 18 18 6M8 6h10v10" />
                 </svg>
@@ -1289,11 +1284,11 @@
           <div class="map-hud">
             <div class="hud-card">
               <span class="hud-title">Tracked Objects</span>
-              <span class="hud-value">12,482</span>
+              <span class="hud-value" id="hud-total-objects">—</span>
             </div>
             <div class="hud-card">
               <span class="hud-title">Close Encounters</span>
-              <span class="hud-value">34</span>
+              <span class="hud-value" id="hud-close-encounters">—</span>
             </div>
             <div class="hud-card">
               <span class="hud-title">UTC Time</span>
@@ -1310,6 +1305,7 @@
             <div class="mp-row"><span>Velocity</span><span>—</span></div>
             <div class="mp-row"><span>Status</span><span>—</span></div>
             <div class="mp-row"><span>Regime</span><span>—</span></div>
+            <a id="mp-monitor-link" href="../MONITOR/montior.html" style="display:block;margin-top:10px;padding:6px 10px;background:var(--accent-dim);border:1px solid var(--accent-line);border-radius:6px;color:var(--accent);font-size:11px;font-weight:600;text-align:center;text-decoration:none;">Track Conjunctions in Monitor &rarr;</a>
           </div>
         </div>
       </div>
@@ -1326,18 +1322,20 @@
               <p>Active constellations, meteorological platforms, scientific probes, and retired payloads currently
                 cataloged in orbit.</p>
             </div>
+            <span class="total-count-pill" id="sats-display-count">Loading Objects...</span>
           </div>
 
-          <!-- Filter Bar -->
-          <div class="filters-row">
-            <button class="filter-pill active">All (8,061)</button>
-            <button class="filter-pill">Active</button>
-            <button class="filter-pill">Inactive</button>
-            <button class="filter-pill">LEO (< 2,000 km)</button>
-                <button class="filter-pill">MEO</button>
-                <button class="filter-pill">GEO (35,786 km)</button>
-                <div class="filter-spacer"></div>
-                <span class="total-count-pill">Displaying 12 of 8,061</span>
+          <!-- Category Filter Bar (Only Categories) -->
+          <div class="filters-row" id="sat-filters-row">
+            <button class="filter-pill active" id="filter-all-sats-btn" data-filter="all">All Objects</button>
+            <button class="filter-pill" data-filter="stations">Space Stations</button>
+            <button class="filter-pill" data-filter="starlink">Starlink</button>
+            <button class="filter-pill" data-filter="navigation">GPS / Navigation</button>
+            <button class="filter-pill" data-filter="active">Operational Satellites</button>
+            <button class="filter-pill" data-filter="debris">Space Debris</button>
+            <button class="filter-pill" data-filter="high-risk">High Risk</button>
+            <button class="filter-pill" data-filter="medium-risk">Medium Risk</button>
+            <button class="filter-pill" data-filter="low-risk">Low Risk</button>
           </div>
 
           <!-- Table -->
@@ -1351,18 +1349,26 @@
                   <th>Altitude</th>
                   <th>Velocity</th>
                   <th>Inclination</th>
-                  <th>Operational Status</th>
+                  <th>Risk Level</th>
+                  <th>Action</th>
                 </tr>
               </thead>
               <tbody id="satellite-table-body">
-                <!-- Dynamically populated -->
+                <tr>
+                  <td colspan="8" style="text-align:center;padding:48px;color:var(--text-3);">
+                    <div style="display:inline-flex;align-items:center;gap:10px;">
+                      <span class="live-dot"></span>
+                      <span>Streaming live satellite telemetry from orbital backend...</span>
+                    </div>
+                  </td>
+                </tr>
               </tbody>
             </table>
           </div>
 
           <div class="load-more-container">
             <button class="btn-load" id="btn-load-sats">
-              Load Next 50 Satellites
+              Load More Satellites
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M12 5v14M5 12l7 7 7-7" />
               </svg>
@@ -1383,11 +1389,11 @@
               <p>Discharged upper stages, fragmentation remnants, and defunct payloads tracked to mitigate catastrophic
                 orbital collisions.</p>
             </div>
-            <span class="total-count-pill">4,421 Tracked Fragments</span>
+            <span class="total-count-pill" id="debris-total-pill">Loading Fragments...</span>
           </div>
 
           <!-- Alert Notification -->
-          <div class="notice-banner">
+          <div class="notice-banner" id="debris-notice-banner">
             <svg class="banner-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
               stroke-width="2">
               <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
@@ -1395,122 +1401,261 @@
               <line x1="12" y1="17" x2="12.01" y2="17" />
             </svg>
             <div>
-              <div class="banner-heading">3 Conjunction Screening Warnings in Next 24 Hours</div>
-              <div class="banner-desc">Propagated orbits indicate close approach thresholds (< 5.0 km) with active
-                  constellations. Automated screening runs every 90 minutes.</div>
-              </div>
-            </div>
-
-            <!-- Filter Chips -->
-            <div class="filters-row" style="margin-bottom:28px;">
-              <button class="filter-pill active">All Debris</button>
-              <button class="filter-pill">High Risk (Collision)</button>
-              <button class="filter-pill">Medium Risk</button>
-              <button class="filter-pill">Low Risk</button>
-              <button class="filter-pill">Rocket Bodies (R/B)</button>
-              <button class="filter-pill">Fragmentation Clouds</button>
-            </div>
-
-            <!-- Cards Grid -->
-            <div class="debris-grid-cards" id="debris-cards-grid">
-              <!-- Dynamically populated -->
-            </div>
-
-            <div class="load-more-container">
-              <button class="btn-load" id="btn-load-debris">
-                Load More Tracked Fragments
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M12 5v14M5 12l7 7 7-7" />
-                </svg>
-              </button>
+              <div class="banner-heading" id="debris-banner-heading">Screening real-time orbital conjunctions...</div>
+              <div class="banner-desc" id="debris-banner-desc">Propagating SGP4 orbits to compute close approach thresholds with active constellations.</div>
             </div>
           </div>
+
+          <!-- Filter Chips -->
+          <div class="filters-row" id="debris-filters-row" style="margin-bottom:28px;">
+            <button class="filter-pill active" data-filter="all">All Debris</button>
+            <button class="filter-pill" data-filter="high">High Risk (Collision)</button>
+            <button class="filter-pill" data-filter="medium">Medium Risk</button>
+            <button class="filter-pill" data-filter="low">Low Risk</button>
+            <button class="filter-pill" data-filter="rocket">Rocket Bodies (R/B)</button>
+            <button class="filter-pill" data-filter="cloud">Fragmentation Clouds</button>
+          </div>
+
+          <!-- Cards Grid -->
+          <div class="debris-grid-cards" id="debris-cards-grid">
+            <div style="grid-column:1/-1;text-align:center;padding:48px;color:var(--text-3);">
+              <div style="display:inline-flex;align-items:center;gap:10px;">
+                <span class="live-dot"></span>
+                <span>Streaming live space debris fragmentation telemetry from CelesTrak...</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="load-more-container">
+            <button class="btn-load" id="btn-load-debris">
+              Load More Tracked Fragments
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 5v14M5 12l7 7 7-7" />
+              </svg>
+            </button>
+          </div>
         </div>
+      </div>
 
         <!-- ==========================================
          PANEL 4: 🔎 SEARCH OBJECT
     =========================================== -->
         <div class="tab-panel" id="panel-search">
-          <div class="search-hero-box">
-            <div class="eyebrow" style="margin-bottom:14px;">Instant Catalog Query</div>
-            <h1>Search the Orbital Database</h1>
-            <p>Query over 12,480 cataloged spacecraft, debris remnants, and rocket bodies by common designation, NORAD
-              identifier, or COSPAR ID.</p>
+          <div class="panel-container">
+            <div class="search-hero-box">
+              <div class="eyebrow" style="margin-bottom:14px;">Instant Catalog Query</div>
+              <h1>Search the Orbital Database</h1>
+              <p>Query over <span id="search-cat-count">16,000+</span> cataloged spacecraft, debris remnants, and rocket bodies by common designation, NORAD identifier, or COSPAR ID.</p>
 
-            <div class="search-input-wrapper">
-              <input type="text" class="main-search-input" id="object-search-input"
-                placeholder="Search by satellite name, NORAD ID (e.g. 25544), or mission..." autocomplete="off"
-                spellcheck="false" />
-              <svg class="search-icon-btn" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                stroke-width="2">
-                <circle cx="11" cy="11" r="8" />
-                <path d="m21 21-4.35-4.35" />
-              </svg>
+              <div class="search-input-wrapper">
+                <input type="text" class="main-search-input" id="object-search-input"
+                  placeholder="Search satellite name, NORAD ID (e.g. 25544, STARLINK, ISS)..." autocomplete="off" />
+                <div class="search-icon-btn">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8" />
+                    <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                  </svg>
+                </div>
+              </div>
+
+              <div class="quick-search-tags">
+                <button class="quick-tag" data-query="ISS">ISS (ZARYA)</button>
+                <button class="quick-tag" data-query="STARLINK">Starlink</button>
+                <button class="quick-tag" data-query="TIANGONG">Tiangong</button>
+                <button class="quick-tag" data-query="COSMOS">Cosmos Debris</button>
+                <button class="quick-tag" data-query="GPS">GPS Constellation</button>
+                <button class="quick-tag" data-query="HUBBLE">Hubble ST</button>
+              </div>
             </div>
 
-            <div class="quick-search-tags">
-              <button class="quick-tag" data-query="ISS">🛸 ISS (Zarya)</button>
-              <button class="quick-tag" data-query="Hubble">🔭 Hubble Space Telescope</button>
-              <button class="quick-tag" data-query="Starlink">🌐 Starlink Fleet</button>
-              <button class="quick-tag" data-query="NOAA">🌦 NOAA-19</button>
-              <button class="quick-tag" data-query="GPS">📡 GPS Constellation</button>
-              <button class="quick-tag" data-query="Cosmos">☄️ Cosmos 1408</button>
-              <button class="quick-tag" data-query="Fengyun">🚀 Fengyun 1C</button>
-            </div>
-          </div>
-
-          <div class="search-results-section">
-            <div class="results-header-label" id="results-label">Recently Queried Objects</div>
-            <div id="search-items-container">
-              <!-- Dynamically populated -->
+            <div class="search-results-section">
+              <div class="results-header-label" id="results-label">Showing recently accessed telemetry records</div>
+              <div id="search-items-container">
+                <!-- Dynamically populated -->
+              </div>
             </div>
           </div>
         </div>
 
     </main>
+
   </div>
 
-  <!-- ============================================================
-     JAVASCRIPT LOGIC
-============================================================ -->
   <script>
+    /* ============================================================
+       EXPLORE PAGE INITIALIZATION & CLOCK
+    ============================================================ */
+    function updateClock() {
+      const now = new Date();
+      const hours = String(now.getUTCHours()).padStart(2, '0');
+      const minutes = String(now.getUTCMinutes()).padStart(2, '0');
+      const seconds = String(now.getUTCSeconds()).padStart(2, '0');
+      const timeStr = `${hours}:${minutes}:${seconds} UTC`;
+
+      const targets = [
+        document.getElementById('hud-clock'),
+        document.getElementById('utc-clock'),
+        ...document.querySelectorAll('.utc-clock-display, [data-utc-clock]')
+      ];
+      targets.forEach(el => {
+        if (el) el.textContent = timeStr;
+      });
+    }
+    updateClock();
+    setInterval(updateClock, 1000);
+
     /* ---- Navbar Scrolled State ---- */
     const header = document.getElementById('header');
     window.addEventListener('scroll', () => {
       header.classList.toggle('scrolled', window.scrollY > 12);
     }, { passive: true });
 
-    /* ---- Live UTC Clock in HUD ---- */
-    function updateClock() {
-      const el = document.getElementById('hud-clock');
-      if (!el) return;
-      const now = new Date();
-      el.textContent = now.toUTCString().slice(17, 25) + ' UTC';
+    /* ---- Real-Time Explore Telemetry & Stat Synchronization ---- */
+    function syncExploreStats() {
+      if (typeof CosmixAPI === 'undefined') return;
+      CosmixAPI.getStats().then(stats => {
+        if (!stats) return;
+        const total = typeof stats.total_monitored === 'number' ? stats.total_monitored : 16049;
+        const debris = typeof stats.tracked_debris === 'number' ? stats.tracked_debris : 2777;
+        const activeSats = typeof stats.active_satellites === 'number' ? stats.active_satellites : (total - debris);
+        const approaches = typeof stats.conjunctions_screened === 'number' ? stats.conjunctions_screened : 0;
+
+        const hudTotal = document.getElementById('hud-total-objects');
+        if (hudTotal) hudTotal.textContent = total.toLocaleString();
+
+        const hudEncounters = document.getElementById('hud-close-encounters');
+        if (hudEncounters) hudEncounters.textContent = approaches.toString();
+
+        const satBadge = document.getElementById('sidebar-sat-badge');
+        if (satBadge) satBadge.textContent = activeSats.toLocaleString();
+
+        const debBadge = document.getElementById('sidebar-deb-badge');
+        if (debBadge) debBadge.textContent = debris.toLocaleString();
+
+        const allSatsBtn = document.getElementById('filter-all-sats-btn');
+        if (allSatsBtn) allSatsBtn.textContent = `All (${activeSats.toLocaleString()})`;
+
+        const satsCount = document.getElementById('sats-display-count');
+        if (satsCount) satsCount.textContent = `${activeSats.toLocaleString()} Monitored Objects`;
+
+        const debPill = document.getElementById('debris-total-pill');
+        if (debPill) debPill.textContent = `${debris.toLocaleString()} Tracked Fragments`;
+
+        const searchCount = document.getElementById('search-cat-count');
+        if (searchCount) searchCount.textContent = total.toLocaleString();
+      }).catch(() => {});
+
+      CosmixAPI.getConjunctions().then(conjunctions => {
+        renderExploreNotifications(conjunctions);
+      }).catch(() => {});
     }
-    updateClock();
-    setInterval(updateClock, 1000);
 
-    /* ---- Tab Switching ---- */
-    const sidebarLinks = document.querySelectorAll('.sidebar-link');
-    const tabPanels = document.querySelectorAll('.tab-panel');
-    const PANEL_MAP = {
-      'orbital-map': 'panel-orbital-map',
-      'satellites': 'panel-satellites',
-      'debris': 'panel-debris',
-      'search': 'panel-search',
-    };
+    function renderExploreNotifications(conjunctions) {
+      const list = document.getElementById('notif-list');
+      const badge = document.getElementById('notif-badge');
+      const unread = document.getElementById('notif-unread-count');
+      if (!list) return;
 
-    function activateTab(tabId) {
-      sidebarLinks.forEach(link => link.classList.toggle('active', link.dataset.tab === tabId));
-      tabPanels.forEach(panel => panel.classList.toggle('active', panel.id === PANEL_MAP[tabId]));
-      if (tabId === 'orbital-map' && !mapInitialized) {
-        initCesiumMap();
+      const items = [];
+      const alerts = Array.isArray(conjunctions) ? conjunctions : [];
+
+      if (alerts.length > 0) {
+        alerts.slice(0, 3).forEach((c, idx) => {
+          const isHigh = (c.risk_level || '').toUpperCase() === 'HIGH' || (c.risk_level || '').toUpperCase() === 'CRITICAL';
+          const missKm = Number(c.miss_distance_km).toFixed(1);
+          const score = (Number(c.risk_score) * 100).toFixed(1);
+          const alt = c.sat1_alt_at_tca_km ? `${Math.round(c.sat1_alt_at_tca_km)} km` : 'LEO';
+
+          items.push(`
+            <div class="notif-item unread" data-category="conjunctions">
+              <div class="notif-icon ${isHigh ? 'notif-risk' : 'notif-attention'}">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                  <line x1="12" y1="9" x2="12" y2="13" />
+                  <line x1="12" y1="17" x2="12.01" y2="17" />
+                </svg>
+              </div>
+              <div class="notif-content">
+                <div class="notif-title-row">
+                  <span class="notif-title">${isHigh ? 'High-Risk Conjunction Alert' : 'Close Approach Flagged'}</span>
+                  <span class="notif-time">${(idx + 1) * 12}m ago</span>
+                </div>
+                <p class="notif-desc"><strong style="color:var(--text-1)">${c.sat1_name}</strong> predicted within ${missKm} km of <strong style="color:var(--accent)">${c.sat2_name}</strong>.</p>
+                <div class="notif-meta-tags">
+                  <span class="notif-tag ${isHigh ? 'tag-risk' : 'tag-attention'}">Risk: ${score}%</span>
+                  <span class="notif-tag">${alt}</span>
+                </div>
+              </div>
+              <span class="unread-dot"></span>
+            </div>
+          `);
+        });
       }
-    }
 
-    sidebarLinks.forEach(link => {
-      link.addEventListener('click', () => activateTab(link.dataset.tab));
+      items.push(`
+        <div class="notif-item unread" data-category="system">
+          <div class="notif-icon notif-safe">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10" />
+              <path d="m9 12 2 2 4-4" />
+            </svg>
+          </div>
+          <div class="notif-content">
+            <div class="notif-title-row">
+              <span class="notif-title">CelesTrak GP Telemetry Active</span>
+              <span class="notif-time">Just now</span>
+            </div>
+            <p class="notif-desc">24h compliant element set cache active. SGP4 propagation pipeline running smoothly.</p>
+            <div class="notif-meta-tags">
+              <span class="notif-tag tag-safe">Operational</span>
+            </div>
+          </div>
+          <span class="unread-dot"></span>
+        </div>
+      `);
+
+      list.innerHTML = items.join('');
+      const unreadCount = alerts.length + 1;
+      if (badge) badge.textContent = unreadCount.toString();
+      if (unread) unread.textContent = `${unreadCount} unread`;
+
+      document.querySelectorAll('#notif-list .notif-item').forEach(item => {
+        item.addEventListener('click', () => {
+          item.classList.remove('unread');
+          const remaining = document.querySelectorAll('#notif-list .notif-item.unread').length;
+          if (unread) unread.textContent = `${remaining} unread`;
+          if (badge) {
+            if (remaining > 0) badge.textContent = remaining;
+            else badge.classList.add('hidden');
+          }
+        });
+      });
+    }
+    syncExploreStats();
+
+    /* ---- Tab Switching Hook ---- */
+    document.querySelectorAll('.sidebar-link').forEach(link => {
+      link.addEventListener('click', function(e) {
+        e.preventDefault();
+        const tab = this.getAttribute('data-tab');
+        if (tab && typeof window.activateTab === 'function') {
+          window.activateTab(tab);
+        }
+      });
     });
+
+    // Check URL parameters and hash on load
+    (function handleInitialTab() {
+      try {
+        const params = new URLSearchParams(window.location.search);
+        const urlTab = params.get('tab');
+        const hashTab = window.location.hash.replace('#', '');
+        const targetTab = urlTab || hashTab;
+        if (targetTab && typeof window.activateTab === 'function') {
+          window.activateTab(targetTab);
+        }
+      } catch (e) {}
+    })();
 
     /* ---- Filter Pills Generic Active Handler ---- */
     document.querySelectorAll('.filters-row').forEach(row => {
@@ -1523,181 +1668,499 @@
     });
 
     /* ============================================================
-       SATELLITE DATA & RENDERING
+       SATELLITE DATA & RENDERING (REAL-TIME FETCHED)
     ============================================================ */
-    const SATELLITE_DATA = [
-      { name: 'ISS (ZARYA)', norad: '25544', orbit: 'LEO', alt: '418 km', vel: '7.66 km/s', incl: '51.6°', status: 'active' },
-      { name: 'HUBBLE SPACE TEL', norad: '20580', orbit: 'LEO', alt: '547 km', vel: '7.59 km/s', incl: '28.5°', status: 'active' },
-      { name: 'STARLINK-3021', norad: '49728', orbit: 'LEO', alt: '550 km', vel: '7.59 km/s', incl: '53.0°', status: 'active' },
-      { name: 'NOAA-19', norad: '33591', orbit: 'LEO', alt: '870 km', vel: '7.44 km/s', incl: '99.1°', status: 'active' },
-      { name: 'GPS BIIA-10', norad: '20724', orbit: 'MEO', alt: '20,200 km', vel: '3.87 km/s', incl: '55.0°', status: 'active' },
-      { name: 'INTELSAT 30', norad: '40424', orbit: 'GEO', alt: '35,786 km', vel: '3.07 km/s', incl: '0.1°', status: 'active' },
-      { name: 'TERRA (EOS AM-1)', norad: '25994', orbit: 'LEO', alt: '705 km', vel: '7.50 km/s', incl: '98.2°', status: 'active' },
-      { name: 'AQUA (EOS PM-1)', norad: '27424', orbit: 'LEO', alt: '705 km', vel: '7.50 km/s', incl: '98.2°', status: 'active' },
-      { name: 'SENTINEL-1A', norad: '39634', orbit: 'LEO', alt: '693 km', vel: '7.51 km/s', incl: '98.2°', status: 'active' },
-      { name: 'LANDSAT 8', norad: '39084', orbit: 'LEO', alt: '705 km', vel: '7.50 km/s', incl: '98.2°', status: 'active' },
-      { name: 'COSMOS 2251', norad: '22675', orbit: 'LEO', alt: 'Decayed', vel: '—', incl: '74.0°', status: 'inactive' },
-      { name: 'FENGYUN 1C', norad: '29677', orbit: 'LEO', alt: '820 km', vel: '7.46 km/s', incl: '98.8°', status: 'attention' },
-    ];
+    let CURRENT_SATELLITES = [];
+    let CURRENT_DEBRIS = [];
+    let ALL_SEARCH_OBJECTS = [];
 
-    function getStatusBadge(status) {
-      if (status === 'active') return '<span class="status-badge status-active">Active</span>';
-      if (status === 'inactive') return '<span class="status-badge status-inactive">Inactive / Decayed</span>';
-      return '<span class="status-badge status-attention">Proximity Warning</span>';
+    function getStatusBadge(status, risk) {
+      if (risk === 'high' || status === 'attention') {
+        return '<span class="status-badge status-attention" style="background:rgba(239,106,106,0.15);color:#ef6a6a;border-color:rgba(239,106,106,0.3);">High Risk</span>';
+      }
+      if (risk === 'medium' || status === 'inactive') {
+        return '<span class="status-badge status-inactive" style="background:rgba(232,182,87,0.15);color:#e8b657;border-color:rgba(232,182,87,0.3);">Medium Risk</span>';
+      }
+      return '<span class="status-badge status-active" style="background:rgba(79,209,165,0.15);color:#4fd1a5;border-color:rgba(79,209,165,0.3);">Low Risk</span>';
     }
 
     function getOrbitChip(orbit) {
-      return '<span class="orbit-chip ' + orbit.toLowerCase() + '">' + orbit + '</span>';
+      return '<span class="orbit-chip ' + (orbit || 'LEO').toLowerCase() + '">' + (orbit || 'LEO') + '</span>';
+    }
+
+    function formatSatelliteRecord(sat) {
+      const apogee = Number(sat.apogee_km) || 500;
+      const perigee = Number(sat.perigee_km) || 500;
+      const avgAlt = Math.round((apogee + perigee) / 2);
+      const vel = (Math.sqrt(398600.4418 / (6371 + avgAlt))).toFixed(2);
+      let regime = sat.regime || 'LEO';
+      if (!sat.regime) {
+        if (avgAlt >= 2000 && avgAlt < 35000) regime = 'MEO';
+        else if (avgAlt >= 35000) regime = 'GEO';
+      }
+
+      const name = sat.name || ('SAT-' + (sat.norad_id || sat.norad));
+      const isDebris = name.includes('DEB') || name.includes('R/B') || sat.status === 'DEBRIS';
+      const isAttention = (sat.bstar_drag && sat.bstar_drag > 0.00025) || sat.status === 'attention';
+
+      let cat = 'active';
+      if (isDebris) cat = 'debris';
+      else if (name.includes('STARLINK')) cat = 'starlink';
+      else if (name.includes('GPS') || name.includes('GALILEO') || name.includes('GLONASS')) cat = 'navigation';
+      else if (name.includes('ISS') || name.includes('TIANGONG') || name.includes('STATION')) cat = 'stations';
+
+      const risk = isAttention ? 'high' : (isDebris ? 'medium' : 'low');
+
+      return {
+        name: name,
+        norad: '' + (sat.norad_id || sat.norad),
+        orbit: regime,
+        alt: avgAlt + ' km',
+        altNum: avgAlt,
+        vel: vel + ' km/s',
+        incl: (sat.inclination_deg ? Number(sat.inclination_deg).toFixed(1) : '51.6') + '°',
+        status: isDebris ? 'inactive' : (isAttention ? 'attention' : 'active'),
+        category: cat,
+        risk: risk,
+        icon: isDebris ? '☄️' : (name.includes('ISS') || name.includes('TIANGONG') || name.includes('STATION') ? '🛸' : '🛰️'),
+        meta: `NORAD ${sat.norad_id || sat.norad} · ${regime} · ${avgAlt} km · ${isDebris ? 'DEBRIS' : 'ACTIVE'}`,
+        raw: sat
+      };
     }
 
     function renderSatelliteTable(data) {
       const tbody = document.getElementById('satellite-table-body');
+      if (!tbody) return;
+      if (!data || !data.length) {
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:32px;color:var(--text-3);">No matching catalog records found.</td></tr>';
+        return;
+      }
       tbody.innerHTML = data.map(sat => `
-        <tr>
+        <tr onclick="selectSatelliteRow('${sat.norad}')">
           <td class="primary-cell">${sat.name}</td>
           <td style="font-size:12px;color:var(--text-3);font-variant-numeric:tabular-nums">${sat.norad}</td>
           <td>${getOrbitChip(sat.orbit)}</td>
           <td>${sat.alt}</td>
           <td>${sat.vel}</td>
           <td>${sat.incl}</td>
-          <td>${getStatusBadge(sat.status)}</td>
+          <td>${getStatusBadge(sat.status, sat.risk)}</td>
+          <td>
+            <button class="btn-3d-jump" onclick="flyToObjectOnMap('${sat.norad}', event)" style="padding:4px 9px;background:var(--accent-dim);border:1px solid var(--accent-line);border-radius:6px;color:var(--accent);font-size:11px;font-weight:600;cursor:pointer;">
+              🌍 3D View
+            </button>
+          </td>
         </tr>
       `).join('');
     }
-    renderSatelliteTable(SATELLITE_DATA);
+    // Render initial table immediately
+    renderSatelliteTable(CURRENT_SATELLITES);
 
-    document.getElementById('btn-load-sats').addEventListener('click', function () {
-      this.textContent = 'All 8,061 Records Indexed';
-      this.disabled = true;
-      this.style.opacity = '0.5';
+    async function selectSatelliteRow(noradId) {
+      const idStr = String(noradId);
+      let sat = CURRENT_SATELLITES.find(s => s.norad === idStr) ||
+                CURRENT_DEBRIS.find(d => d.norad === idStr) ||
+                ALL_SEARCH_OBJECTS.find(o => o.norad === idStr);
+
+      if (!sat && typeof CosmixAPI !== 'undefined') {
+        try {
+          const results = await CosmixAPI.searchCatalog(idStr, 1);
+          if (results && results.length > 0) {
+            sat = formatSatelliteRecord(results[0]);
+          }
+        } catch (e) {}
+      }
+
+      if (sat && typeof CosmixAPI !== 'undefined') {
+        CosmixAPI.recordRecentlyViewed(sat);
+        loadRecentlyViewed();
+      }
+
+      flyToObjectOnMap(idStr);
+    }
+
+    function flyToObjectOnMap(noradId, e) {
+      if (e && e.stopPropagation) e.stopPropagation();
+      const idStr = String(noradId);
+      window.activateTab('orbital-map');
+
+      setTimeout(() => {
+        if (!viewer) return;
+        const allEntities = [...satelliteEntities, ...debrisEntities];
+        const matched = allEntities.find(e => e.userData && ('' + e.userData.norad === idStr));
+
+        if (matched) {
+          viewer.trackedEntity = matched;
+          setTimeout(() => {
+            viewer.zoomTo(matched, new Cesium.HeadingPitchRange(
+              Cesium.Math.toRadians(0),
+              Cesium.Math.toRadians(-35),
+              2500000.0
+            ));
+          }, 100);
+        } else {
+          // Compute real-time camera focus for dynamically queried satellite
+          const altM = 550000.0;
+          const pos = calculateOrbitalPosition(altM, Cesium.Math.toRadians(51.6), 0.5, 0.5);
+          viewer.camera.flyTo({
+            destination: pos,
+            duration: 1.5
+          });
+        }
+      }, 200);
+    }
+
+    let CURRENT_PAGE_LIMIT = 50;
+
+    async function loadLiveSatellites(more = false) {
+      if (typeof CosmixAPI === 'undefined') return;
+      if (more) {
+        CURRENT_PAGE_LIMIT += 50;
+      }
+      const activeFilterPill = document.querySelector('#sat-filters-row .filter-pill.active');
+      const filterKey = activeFilterPill ? (activeFilterPill.dataset.filter || 'all') : 'all';
+
+      const groupMap = {
+        'stations': 'stations',
+        'starlink': 'starlink',
+        'navigation': 'gps-ops',
+        'active': 'active',
+        'debris': 'debris'
+      };
+
+      try {
+        const groupParam = (filterKey !== 'all' && groupMap[filterKey]) ? groupMap[filterKey] : undefined;
+        const raw = await CosmixAPI.getCatalog({ limit: CURRENT_PAGE_LIMIT, group: groupParam });
+        if (Array.isArray(raw) && raw.length > 0) {
+          CURRENT_SATELLITES = raw.map(formatSatelliteRecord);
+          filterSatelliteTable(filterKey);
+          updateSearchDatabase();
+
+          const btnLoad = document.getElementById('btn-load-sats');
+          if (btnLoad) {
+            btnLoad.innerHTML = `Load Next 50 Satellites (${CURRENT_SATELLITES.length} Loaded) <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12l7 7 7-7" /></svg>`;
+          }
+        }
+      } catch (e) {
+        console.warn('Live catalog fetch notice:', e);
+      }
+    }
+    window.loadLiveSatellites = loadLiveSatellites;
+
+    // Catalogue & Risk Filter Handler
+    async function filterSatelliteTable(filterKey) {
+      const countEl = document.getElementById('sats-display-count');
+      const groupMap = {
+        'stations': 'stations',
+        'starlink': 'starlink',
+        'navigation': 'gps-ops',
+        'active': 'active',
+        'debris': 'debris'
+      };
+
+      if (groupMap[filterKey]) {
+        try {
+          const groupData = await CosmixAPI.getCatalog({ group: groupMap[filterKey], limit: CURRENT_PAGE_LIMIT });
+          if (Array.isArray(groupData) && groupData.length > 0) {
+            CURRENT_SATELLITES = groupData.map(formatSatelliteRecord);
+            renderSatelliteTable(CURRENT_SATELLITES);
+            updateSearchDatabase();
+            if (countEl) countEl.textContent = `${CURRENT_SATELLITES.length} ${filterKey.toUpperCase()} Objects`;
+            return;
+          }
+        } catch (err) {}
+      }
+
+      let filtered = CURRENT_SATELLITES;
+      if (filterKey === 'high-risk') {
+        filtered = CURRENT_SATELLITES.filter(s => s.risk === 'high');
+      } else if (filterKey === 'medium-risk') {
+        filtered = CURRENT_SATELLITES.filter(s => s.risk === 'medium');
+      } else if (filterKey === 'low-risk') {
+        filtered = CURRENT_SATELLITES.filter(s => s.risk === 'low');
+      } else if (filterKey !== 'all') {
+        filtered = CURRENT_SATELLITES.filter(s => s.category === filterKey);
+      }
+
+      renderSatelliteTable(filtered);
+      if (countEl) countEl.textContent = `${filtered.length} Monitored Objects`;
+    }
+
+    // Attach pill events
+    document.querySelectorAll('#sat-filters-row .filter-pill').forEach(pill => {
+      pill.addEventListener('click', function () {
+        document.querySelectorAll('#sat-filters-row .filter-pill').forEach(p => p.classList.remove('active'));
+        this.classList.add('active');
+        filterSatelliteTable(this.dataset.filter);
+      });
     });
 
+    const btnLoadSats = document.getElementById('btn-load-sats');
+    if (btnLoadSats) {
+      btnLoadSats.addEventListener('click', () => loadLiveSatellites(true));
+    }
+
     /* ============================================================
-       DEBRIS DATA & RENDERING
+       DEBRIS FRAGMENTS FUNCTIONALITY & CELESTRAK INTEGRATION
     ============================================================ */
-    const DEBRIS_DATA = [
-      { name: 'COSMOS 1408 DEB', norad: '49700', risk: 'high', alt: '480 km', size: '~1.1 m', orbit: 'LEO', note: 'Predicted close approach within 3.2 km of ISS within 18 hours' },
-      { name: 'FENGYUN 1C DEB', norad: '29677', risk: 'high', alt: '820 km', size: '~0.6 m', orbit: 'LEO', note: 'Dense fragmentation cloud remnant with 2,800+ tracked shards' },
-      { name: 'SL-16 R/B (STAGE)', norad: '19650', risk: 'medium', alt: '860 km', size: '~9.2 m', orbit: 'LEO', note: 'Spent heavy rocket body — elevated long-term conjunction risk' },
-      { name: 'BREEZE-M DEB', norad: '33766', risk: 'medium', alt: '1,480 km', size: '~2.0 m', orbit: 'LEO', note: 'Propellant tank fragment — tumbling with variable radar cross-section' },
-      { name: 'IRIDIUM 33 DEB', norad: '33783', risk: 'medium', alt: '775 km', size: '~1.3 m', orbit: 'LEO', note: '2009 hypervelocity collision shard — gradual natural decay' },
+    const INITIAL_DEBRIS = [
+      { name: 'COSMOS 1408 DEB', norad: '49700', risk: 'high', alt: '480 km', size: '~1.2 m', orbit: 'LEO', note: 'High kinetic cross-section crossing ISS orbital plane' },
+      { name: 'FENGYUN 1C DEB', norad: '29677', risk: 'high', alt: '850 km', size: '~0.8 m', orbit: 'LEO', note: 'Polar sun-synchronous high density altitude band fragment' },
+      { name: 'SL-16 R/B (STAGE)', norad: '19650', risk: 'medium', alt: '840 km', size: '11.0 m', orbit: 'LEO', note: 'Derelict Zenit-2 upper stage rocket body containing residual propellants' },
+      { name: 'BREEZE-M DEB', norad: '38750', risk: 'medium', alt: '520 km', size: '~1.4 m', orbit: 'LEO', note: 'Auxiliary propulsion explosion remnant' },
+      { name: 'IRIDIUM 33 DEB', norad: '33783', risk: 'medium', alt: '775 km', size: '~0.6 m', orbit: 'LEO', note: 'Collision fragment from 2009 Cosmos-2251 / Iridium-33 impact' },
       { name: 'DELTA 1 DEB', norad: '06073', risk: 'low', alt: '3,700 km', size: '< 0.1 m', orbit: 'MEO', note: 'Small high-altitude fragment in stable propagation regime' },
-      { name: 'SL-3 R/B', norad: '00089', risk: 'low', alt: '490 km', size: '~8.0 m', orbit: 'LEO', note: 'Historic booster stage nearing atmospheric re-entry window' },
+      { name: 'SL-3 R/B', norad: '04383', risk: 'medium', alt: '590 km', size: '4.2 m', orbit: 'LEO', note: 'Vostok upper stage in gradual orbital decay trajectory' },
       { name: 'COSMOS 2251 DEB', norad: '33500', risk: 'low', alt: '810 km', size: '~0.3 m', orbit: 'LEO', note: 'Collision remnant in stable near-circular polar orbit' },
+      { name: 'CZ-4B DEB', norad: '44540', risk: 'medium', alt: '740 km', size: '~0.5 m', orbit: 'LEO', note: 'Long March 4B breakup debris passing Sun-synchronous orbiters' },
+      { name: 'PEGASUS DEB', norad: '24320', risk: 'low', alt: '610 km', size: '< 0.2 m', orbit: 'LEO', note: 'Hydrazine auxiliary tank rupture particle' },
+      { name: 'TITAN 3C TRANSTAGE', norad: '01650', risk: 'low', alt: '35,400 km', size: '4.5 m', orbit: 'GEO', note: 'Geosynchronous transfer orbit drift body' },
+      { name: 'THOR ABLE DEB', norad: '00050', risk: 'low', alt: '1,120 km', size: '< 0.1 m', orbit: 'LEO', note: 'Historical legacy space debris from earliest space exploration era' }
     ];
 
-    function renderDebrisCards(data) {
-      const container = document.getElementById('debris-cards-grid');
-      container.innerHTML = data.map(d => `
-        <div class="debris-item-card">
+    function formatDebrisCard(deb) {
+      const risk = deb.risk || 'low';
+      const riskBadgeClass = `danger-${risk}`;
+      const riskLabel = risk.charAt(0).toUpperCase() + risk.slice(1) + ' Risk';
+      const name = deb.name || ('DEB-' + (deb.norad || deb.norad_id));
+      const norad = '' + (deb.norad || deb.norad_id || '—');
+      const alt = deb.alt || (deb.apogee_km ? Math.round((deb.apogee_km + deb.perigee_km) / 2) + ' km' : 'LEO');
+      const size = deb.size || (deb.bstar_drag > 0.00025 ? '~1.2 m' : (deb.bstar_drag > 0.00008 ? '~0.6 m' : '< 0.2 m'));
+      const orbit = deb.orbit || deb.regime || 'LEO';
+      const note = deb.note || (deb.bstar_drag > 0.00025 ? 'Elevated atmospheric drag deceleration rate.' : 'Propagated SGP4 state vector tracked.');
+
+      return `
+        <div class="debris-item-card" onclick="selectSatelliteRow('${norad}')">
           <div class="card-top-row">
-            <h4>${d.name}</h4>
-            <span class="danger-badge danger-${d.risk}">${d.risk.charAt(0).toUpperCase() + d.risk.slice(1)} Risk</span>
+            <h4>${name}</h4>
+            <span class="danger-badge ${riskBadgeClass}">${riskLabel}</span>
           </div>
           <div class="meta-stats-grid">
             <div class="meta-stat-cell">
               <span class="stat-lbl">NORAD ID</span>
-              <span class="stat-val">${d.norad}</span>
+              <span class="stat-val">${norad}</span>
             </div>
             <div class="meta-stat-cell">
               <span class="stat-lbl">Altitude</span>
-              <span class="stat-val">${d.alt}</span>
+              <span class="stat-val">${alt}</span>
             </div>
             <div class="meta-stat-cell">
               <span class="stat-lbl">Est. Size</span>
-              <span class="stat-val">${d.size}</span>
+              <span class="stat-val">${size}</span>
             </div>
             <div class="meta-stat-cell">
               <span class="stat-lbl">Regime</span>
-              <span class="stat-val">${d.orbit}</span>
+              <span class="stat-val">${orbit}</span>
             </div>
           </div>
           <div class="card-note-footer">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
-            ${d.note}
+            <span>${note}</span>
           </div>
         </div>
-      `).join('');
+      `;
     }
-    renderDebrisCards(DEBRIS_DATA);
 
-    document.getElementById('btn-load-debris').addEventListener('click', function () {
-      this.textContent = 'All 4,421 Fragments Displayed';
-      this.disabled = true;
-      this.style.opacity = '0.5';
+    function renderDebrisCards(list) {
+      const grid = document.getElementById('debris-cards-grid');
+      if (!grid) return;
+      if (!list || !list.length) {
+        grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:48px;color:var(--text-3);">No matching space debris remnants cataloged.</div>';
+        return;
+      }
+      grid.innerHTML = list.map(formatDebrisCard).join('');
+    }
+
+    let CURRENT_DEBRIS_LIMIT = 40;
+
+    async function loadLiveDebris(more = false) {
+      if (typeof CosmixAPI === 'undefined') return;
+      if (more) {
+        CURRENT_DEBRIS_LIMIT += 30;
+      }
+      try {
+        const liveDebris = await CosmixAPI.getCatalog({ group: 'debris', limit: CURRENT_DEBRIS_LIMIT });
+        if (Array.isArray(liveDebris) && liveDebris.length > 0) {
+          CURRENT_DEBRIS = liveDebris.map(formatSatelliteRecord);
+          const activeFilter = document.querySelector('#debris-filters-row .filter-pill.active');
+          filterDebrisCards(activeFilter ? (activeFilter.dataset.filter || 'all') : 'all');
+          const debPill = document.getElementById('debris-total-pill');
+          if (debPill) debPill.textContent = `${CURRENT_DEBRIS.length} Tracked Fragments`;
+          const btnLoad = document.getElementById('btn-load-debris');
+          if (btnLoad) {
+            btnLoad.innerHTML = `Load More Tracked Fragments (${CURRENT_DEBRIS.length} Loaded) <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12l7 7 7-7" /></svg>`;
+          }
+          updateSearchDatabase();
+          return;
+        }
+      } catch (e) {
+        console.warn('Debris fetch notice:', e);
+      }
+      if (!more) {
+        CURRENT_DEBRIS = INITIAL_DEBRIS;
+        renderDebrisCards(CURRENT_DEBRIS);
+      }
+    }
+    window.loadLiveDebris = loadLiveDebris;
+
+    function filterDebrisCards(filterKey) {
+      let filtered = CURRENT_DEBRIS;
+      if (filterKey === 'high') filtered = CURRENT_DEBRIS.filter(d => d.risk === 'high');
+      else if (filterKey === 'medium') filtered = CURRENT_DEBRIS.filter(d => d.risk === 'medium');
+      else if (filterKey === 'low') filtered = CURRENT_DEBRIS.filter(d => d.risk === 'low');
+      else if (filterKey === 'rocket') filtered = CURRENT_DEBRIS.filter(d => (d.name || '').includes('R/B') || (d.name || '').includes('STAGE') || (d.name || '').includes('SL-') || (d.name || '').includes('DELTA') || (d.name || '').includes('TRANSTAGE'));
+      else if (filterKey === 'cloud') filtered = CURRENT_DEBRIS.filter(d => (d.name || '').includes('FENGYUN') || (d.name || '').includes('COSMOS') || (d.name || '').includes('IRIDIUM'));
+
+      renderDebrisCards(filtered);
+    }
+
+    // Debris Filter Tabs
+    document.querySelectorAll('#debris-filters-row .filter-pill').forEach(pill => {
+      pill.addEventListener('click', function () {
+        document.querySelectorAll('#debris-filters-row .filter-pill').forEach(p => p.classList.remove('active'));
+        this.classList.add('active');
+        filterDebrisCards(this.dataset.filter);
+      });
     });
 
-    /* ============================================================
-       SEARCH OBJECT FUNCTIONALITY
-    ============================================================ */
-    const SEARCH_DATABASE = [
-      { icon: '🛸', name: 'ISS (ZARYA)', meta: 'NORAD 25544 · LEO · Active Space Station' },
-      { icon: '🔭', name: 'Hubble Space Telescope', meta: 'NORAD 20580 · LEO · Active Observatory' },
-      { icon: '🌐', name: 'STARLINK-3021', meta: 'NORAD 49728 · LEO · Active Communications' },
-      { icon: '☄️', name: 'COSMOS 1408 DEB', meta: 'NORAD 49700 · LEO · High Conjunction Risk' },
-      { icon: '🌦', name: 'NOAA-19', meta: 'NORAD 33591 · LEO · Weather Observation' },
-      { icon: '🚀', name: 'FENGYUN 1C DEB', meta: 'NORAD 29677 · LEO · High Risk Debris' },
-      { icon: '📡', name: 'GPS BIIA-10', meta: 'NORAD 20724 · MEO · Global Positioning' },
-      { icon: '📡', name: 'INTELSAT 30', meta: 'NORAD 40424 · GEO · Geostationary Comms' },
-      { icon: '🛰️', name: 'TERRA (EOS AM-1)', meta: 'NORAD 25994 · LEO · Active Earth Science' },
-      { icon: '🛰️', name: 'SENTINEL-1A', meta: 'NORAD 39634 · LEO · Radar Earth Imaging' },
-      { icon: '☄️', name: 'IRIDIUM 33 DEB', meta: 'NORAD 33783 · LEO · Medium Risk Debris' },
-    ];
+    const btnLoadDeb = document.getElementById('btn-load-debris');
+    if (btnLoadDeb) {
+      btnLoadDeb.addEventListener('click', () => loadLiveDebris(true));
+    }
 
-    const RECENT_QUERIES = SEARCH_DATABASE.slice(0, 5);
+    async function updateDebrisNoticeBanner() {
+      const headingEl = document.getElementById('debris-banner-heading');
+      const descEl = document.getElementById('debris-banner-desc');
+      if (!headingEl || !descEl) return;
+
+      try {
+        if (typeof CosmixAPI !== 'undefined') {
+          const conjunctions = await CosmixAPI.getConjunctions({ limit: 10 });
+          if (Array.isArray(conjunctions) && conjunctions.length > 0) {
+            const count = conjunctions.length;
+            const closest = conjunctions[0];
+            const missDist = closest.miss_distance_km ? `${closest.miss_distance_km.toFixed(1)} km` : '< 5.0 km';
+            const pair = (closest.sat1_name && closest.sat2_name) ? `${closest.sat1_name} ↔ ${closest.sat2_name}` : 'active constellations';
+
+            headingEl.textContent = `${count} Conjunction Screening Warnings in Next 24 Hours`;
+            descEl.textContent = `Propagated SGP4 orbits indicate close approach thresholds (${missDist} miss distance: ${pair}). Automated screening updates every 90 minutes.`;
+            return;
+          }
+        }
+      } catch (e) {}
+
+      headingEl.textContent = `Active Conjunction Screening Online`;
+      descEl.textContent = `Propagated orbits indicate close approach thresholds with active constellations. Automated screening runs every 90 minutes.`;
+    }
+    window.updateDebrisNoticeBanner = updateDebrisNoticeBanner;
+    updateDebrisNoticeBanner();
+
+    /* ============================================================
+       SEARCH OBJECT FUNCTIONALITY & RECENT LOGS
+    ============================================================ */
+    function updateSearchDatabase() {
+      ALL_SEARCH_OBJECTS = [...CURRENT_SATELLITES, ...CURRENT_DEBRIS].map(s => ({
+        icon: s.icon || (s.status === 'inactive' ? '☄️' : (s.name.includes('ISS') ? '🛸' : '🛰️')),
+        name: s.name,
+        meta: s.meta || `NORAD ${s.norad} · ${s.orbit} · ${s.alt} · ${s.status.toUpperCase()}`,
+        norad: s.norad
+      }));
+    }
+
+    async function loadRecentlyViewed() {
+      if (typeof CosmixAPI === 'undefined') return;
+      try {
+        const recent = await CosmixAPI.getRecentlyViewed();
+        if (Array.isArray(recent) && recent.length > 0) {
+          const items = recent.map(r => ({
+            icon: '🛰️',
+            name: r.name,
+            meta: `NORAD ${r.norad_id || r.norad} · ${(r.altitude_km ? r.altitude_km + ' km' : 'LEO')}`,
+            norad: '' + (r.norad_id || r.norad)
+          }));
+          renderSearchResults(items, 'Recently Queried Objects');
+          return;
+        }
+      } catch (e) {}
+      renderSearchResults(ALL_SEARCH_OBJECTS.slice(0, 8), 'Suggested Orbital Objects');
+    }
 
     function renderSearchResults(items, title) {
-      const label = document.getElementById('results-label');
-      const list = document.getElementById('search-items-container');
-      if (title) label.textContent = title;
+      const label = document.getElementById('results-label') || document.getElementById('search-status-bar');
+      const list = document.getElementById('search-items-container') || document.getElementById('search-results-grid');
+      if (label && title) label.textContent = title;
+      if (!list) return;
 
-      if (!items.length) {
+      if (!items || !items.length) {
         list.innerHTML = `
           <div class="empty-search-state">
             <div class="empty-icon">🔭</div>
             <h3>No Matching Objects Found</h3>
-            <p>Check the designation or NORAD ID. The catalog contains 12,482 active records.</p>
+            <p>Check the designation or NORAD ID. The catalog contains live CelesTrak records.</p>
           </div>`;
         return;
       }
 
       list.innerHTML = items.map(item => `
-        <div class="result-item-card">
-          <div class="result-avatar">${item.icon}</div>
+        <div class="result-item-card" onclick="selectSatelliteRow('${item.norad}')">
+          <div class="result-avatar">${item.icon || '🛰️'}</div>
           <div class="result-text">
             <div class="res-title">${item.name}</div>
-            <div class="res-meta">${item.meta}</div>
+            <div class="res-meta">${item.meta || ''}</div>
           </div>
           <svg class="result-action-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
         </div>
       `).join('');
     }
-    renderSearchResults(RECENT_QUERIES, 'Recently Queried Objects');
 
     const searchInput = document.getElementById('object-search-input');
     let searchDebounce;
-    searchInput.addEventListener('input', function () {
-      clearTimeout(searchDebounce);
-      const q = this.value.trim().toLowerCase();
-      searchDebounce = setTimeout(() => {
-        if (!q) {
-          renderSearchResults(RECENT_QUERIES, 'Recently Queried Objects');
-          return;
-        }
-        const filtered = SEARCH_DATABASE.filter(item =>
-          item.name.toLowerCase().includes(q) || item.meta.toLowerCase().includes(q)
-        );
-        renderSearchResults(filtered, 'Results matching "' + searchInput.value.trim() + '" (' + filtered.length + ')');
-      }, 180);
-    });
+    if (searchInput) {
+      searchInput.addEventListener('input', function () {
+        clearTimeout(searchDebounce);
+        const q = this.value.trim();
+        searchDebounce = setTimeout(async () => {
+          if (!q) {
+            loadRecentlyViewed();
+            return;
+          }
+
+          // 1. Query live real-time backend search across entire 16,049 objects
+          if (typeof CosmixAPI !== 'undefined') {
+            try {
+              const apiResults = await CosmixAPI.searchCatalog(q, 50);
+              if (Array.isArray(apiResults) && apiResults.length > 0) {
+                const formatted = apiResults.map(s => formatSatelliteRecord(s));
+                renderSearchResults(formatted, `Real-Time Search Results matching "${q}" (${formatted.length})`);
+                return;
+              }
+            } catch (e) {}
+          }
+
+          // 2. Fallback to local memory filter
+          const qLow = q.toLowerCase();
+          const filtered = ALL_SEARCH_OBJECTS.filter(item =>
+            item.name.toLowerCase().includes(qLow) || item.meta.toLowerCase().includes(qLow) || ('' + item.norad).includes(qLow)
+          );
+          renderSearchResults(filtered, `Results matching "${q}" (${filtered.length})`);
+        }, 150);
+      });
+    }
 
     document.querySelectorAll('.quick-tag').forEach(tag => {
       tag.addEventListener('click', () => {
-        searchInput.value = tag.dataset.query;
-        searchInput.dispatchEvent(new Event('input'));
-        activateTab('search');
+        if (searchInput) {
+          searchInput.value = tag.dataset.query;
+          searchInput.dispatchEvent(new Event('input'));
+          activateTab('search');
+        }
       });
     });
+
+    // Auto-bootstrap live satellite & debris data
+    updateSearchDatabase();
+    loadRecentlyViewed();
+    loadLiveSatellites();
+    loadLiveDebris();
 
     /* ============================================================
        CESIUM ION ORBITAL MAP SCENE
@@ -1712,30 +2175,27 @@
     let orbitPathEntities = [];
     let approachEntities = [];
 
-    // Tracked orbital entities
-    const ORBITAL_OBJECTS = [
-      { name: 'ISS (ZARYA)', norad: '25544', altKm: 418, incDeg: 51.6, raan: 0.2, speed: 0.08, status: 'ACTIVE', orbit: 'LEO', type: 'satellite' },
-      { name: 'HUBBLE SPACE TEL', norad: '20580', altKm: 547, incDeg: 28.5, raan: 1.6, speed: 0.07, status: 'ACTIVE', orbit: 'LEO', type: 'satellite' },
-      { name: 'STARLINK-3021', norad: '49728', altKm: 550, incDeg: 53.0, raan: 3.1, speed: 0.075, status: 'ACTIVE', orbit: 'LEO', type: 'satellite' },
-      { name: 'NOAA-19', norad: '33591', altKm: 870, incDeg: 99.1, raan: 4.5, speed: 0.065, status: 'ACTIVE', orbit: 'LEO', type: 'satellite' },
-      { name: 'SENTINEL-1A', norad: '39634', altKm: 693, incDeg: 98.2, raan: 5.2, speed: 0.068, status: 'ACTIVE', orbit: 'LEO', type: 'satellite' },
-      { name: 'COSMOS 2251 DEB', norad: '22675', altKm: 810, incDeg: 74.0, raan: 2.3, speed: 0.055, status: 'INACTIVE', orbit: 'LEO', type: 'debris' },
-    ];
-
-    // Helper: calculate 3D position along inclined orbit
+    // Helper: calculate 3D position along inclined orbit with strict finite checks
     function calculateOrbitalPosition(altMeters, incRadians, raanRadians, trueAnomalyRadians) {
       const earthRadius = 6378137.0;
-      const r = earthRadius + altMeters;
+      const alt = Number.isFinite(altMeters) ? altMeters : 500000.0;
+      const inc = Number.isFinite(incRadians) ? incRadians : 0.0;
+      const raan = Number.isFinite(raanRadians) ? raanRadians : 0.0;
+      const anom = Number.isFinite(trueAnomalyRadians) ? trueAnomalyRadians : 0.0;
+      const r = earthRadius + alt;
 
       // Position in orbital plane
-      const xPlane = r * Math.cos(trueAnomalyRadians);
-      const yPlane = r * Math.sin(trueAnomalyRadians);
+      const xPlane = r * Math.cos(anom);
+      const yPlane = r * Math.sin(anom);
 
       // Rotate by inclination and RAAN
-      const x = xPlane * Math.cos(raanRadians) - yPlane * Math.cos(incRadians) * Math.sin(raanRadians);
-      const y = xPlane * Math.sin(raanRadians) + yPlane * Math.cos(incRadians) * Math.cos(raanRadians);
-      const z = yPlane * Math.sin(incRadians);
+      const x = xPlane * Math.cos(raan) - yPlane * Math.cos(inc) * Math.sin(raan);
+      const y = xPlane * Math.sin(raan) + yPlane * Math.cos(inc) * Math.cos(raan);
+      const z = yPlane * Math.sin(inc);
 
+      if (!Number.isFinite(x) || !Number.isFinite(y) || !Number.isFinite(z)) {
+        return new Cesium.Cartesian3(r, 0.0, 0.0);
+      }
       return new Cesium.Cartesian3(x, y, z);
     }
 
@@ -1744,9 +2204,12 @@
       const positions = [];
       for (let i = 0; i <= steps; i++) {
         const angle = (i / steps) * Math.PI * 2;
-        positions.push(calculateOrbitalPosition(altMeters, incRadians, raanRadians, angle));
+        const pos = calculateOrbitalPosition(altMeters, incRadians, raanRadians, angle);
+        if (pos && Number.isFinite(pos.x) && Number.isFinite(pos.y) && Number.isFinite(pos.z)) {
+          positions.push(pos);
+        }
       }
-      return positions;
+      return positions.length >= 2 ? positions : null;
     }
 
     async function initCesiumMap() {
@@ -1775,7 +2238,7 @@
         viewer.scene.backgroundColor = Cesium.Color.fromCssColorString('#05070c');
         viewer.scene.globe.baseColor = Cesium.Color.fromCssColorString('#0b0f18');
         viewer.scene.globe.enableLighting = true;
-        viewer.scene.globe.depthTestAgainstTerrain = true; // Occlude satellites/debris behind the globe
+        viewer.scene.globe.depthTestAgainstTerrain = true;
         if (viewer.scene.skyAtmosphere) {
           viewer.scene.skyAtmosphere.brightnessShift = -0.15;
           viewer.scene.skyAtmosphere.saturationShift = -0.1;
@@ -1814,62 +2277,137 @@
     function createOrbitalLayers() {
       let startTime = Date.now();
 
-      // 1. Orbital Ring Paths
-      ORBITAL_OBJECTS.forEach(obj => {
-        const altMeters = obj.altKm * 1000.0;
-        const incRad = Cesium.Math.toRadians(obj.incDeg);
-        const ringPositions = generateOrbitPositions(altMeters, incRad, obj.raan);
+      // Fetch live active satellites, constellations, and debris clouds
+      if (typeof CosmixAPI !== 'undefined') {
+        Promise.allSettled([
+          CosmixAPI.getCatalog({ group: 'stations', limit: 20 }),
+          CosmixAPI.getCatalog({ group: 'active', limit: 80 }),
+          CosmixAPI.getCatalog({ group: 'starlink', limit: 60 }),
+          CosmixAPI.getCatalog({ group: 'fengyun-1c-debris', limit: 60 }),
+          CosmixAPI.getCatalog({ group: 'cosmos-2251-debris', limit: 50 }),
+          CosmixAPI.getCatalog({ group: 'iridium-33-debris', limit: 30 })
+        ]).then(results => {
+          const allObjects = [];
+          results.forEach(res => {
+            if (res.status === 'fulfilled' && Array.isArray(res.value)) {
+              allObjects.push(...res.value);
+            }
+          });
 
-        const pathEntity = viewer.entities.add({
-          polyline: {
-            positions: ringPositions,
-            width: 1.5,
-            material: new Cesium.ColorMaterialProperty(
-              Cesium.Color.fromCssColorString('#8fb4ff').withAlpha(0.28)
-            ),
+          // Deduplicate by NORAD ID
+          const seenNorads = new Set();
+          const uniqueObjects = [];
+          allObjects.forEach(item => {
+            const id = '' + (item.norad_id || item.norad);
+            if (!seenNorads.has(id)) {
+              seenNorads.add(id);
+              uniqueObjects.push(item);
+            }
+          });
+
+          if (uniqueObjects.length > 0) {
+            uniqueObjects.forEach((sat, idx) => {
+              const apogee = Number(sat.apogee_km) || 550;
+              const perigee = Number(sat.perigee_km) || 500;
+              const avgAltKm = Math.round((apogee + perigee) / 2);
+              const altMeters = avgAltKm * 1000.0;
+              const incDeg = Number(sat.inclination_deg) || (sat.name.includes('ISS') ? 51.6 : 53.0);
+              const incRad = Cesium.Math.toRadians(incDeg);
+              const raan = (idx * 0.38) % (Math.PI * 2);
+              const speed = 0.035 + ((idx % 7) * 0.006);
+              const isDebris = (sat.status === 'DEBRIS' || sat.name.includes('DEB') || sat.name.includes('R/B') || sat.object_type === 'DEBRIS');
+              const isStation = sat.name.includes('ISS') || sat.name.includes('TIANGONG') || sat.name.includes('CSS') || sat.name.includes('ZARYA');
+
+              // Generate orbital ring paths for representative planes
+              if (idx < 35 || isStation) {
+                const ringPositions = generateOrbitPositions(altMeters, incRad, raan);
+                if (ringPositions && ringPositions.length >= 2) {
+                  const pEntity = viewer.entities.add({
+                    polyline: {
+                      positions: ringPositions,
+                      width: isStation ? 2.0 : 1.2,
+                      material: new Cesium.ColorMaterialProperty(
+                        Cesium.Color.fromCssColorString(isStation ? '#34d399' : (isDebris ? '#f43f5e' : '#38bdf8')).withAlpha(isStation ? 0.45 : 0.22)
+                      )
+                    }
+                  });
+                  orbitPathEntities.push(pEntity);
+                }
+              }
+
+              // Dynamic 3D Satellite / Debris Point
+              const baseColor = isStation
+                ? Cesium.Color.fromCssColorString('#34d399')
+                : (isDebris ? Cesium.Color.fromCssColorString('#f43f5e') : Cesium.Color.fromCssColorString('#38bdf8'));
+
+              const satEnt = viewer.entities.add({
+                position: new Cesium.CallbackProperty(() => {
+                  const elapsed = (Date.now() - startTime) / 1000.0;
+                  const currentAnomaly = (idx * 0.65) + (elapsed * speed * 0.35);
+                  return calculateOrbitalPosition(altMeters, incRad, raan, currentAnomaly);
+                }, false),
+                point: {
+                  pixelSize: isStation ? 10 : (isDebris ? 5 : 7),
+                  color: baseColor,
+                  outlineColor: Cesium.Color.WHITE.withAlpha(0.9),
+                  outlineWidth: 1.5
+                }
+              });
+
+              satEnt.userData = {
+                name: sat.name || (isDebris ? `DEBRIS-${sat.norad_id}` : `SAT-${sat.norad_id}`),
+                norad: '' + (sat.norad_id || sat.norad),
+                alt: avgAltKm + ' km',
+                vel: (7.6 - (avgAltKm - 400) * 0.0008).toFixed(2) + ' km/s',
+                status: isDebris ? 'UNCONTROLLED' : (sat.status || 'ACTIVE'),
+                orbit: avgAltKm < 2000 ? 'LEO' : (avgAltKm < 35000 ? 'MEO' : 'GEO'),
+                type: isDebris ? 'debris' : 'satellite'
+              };
+
+              if (isDebris) {
+                debrisEntities.push(satEnt);
+              } else {
+                satelliteEntities.push(satEnt);
+              }
+            });
           }
-        });
-        orbitPathEntities.push(pathEntity);
-      });
+        }).catch(e => console.warn('Cesium live orbital entities notice:', e));
+      }
 
-      // 2. Satellites
-      ORBITAL_OBJECTS.forEach((obj, idx) => {
-        const altMeters = obj.altKm * 1000.0;
-        const incRad = Cesium.Math.toRadians(obj.incDeg);
-        const baseColor = obj.type === 'debris'
-          ? Cesium.Color.fromCssColorString('#9aa4b8')
-          : (obj.status === 'INACTIVE' ? Cesium.Color.fromCssColorString('#5c6479') : Cesium.Color.fromCssColorString('#8fb4ff'));
-
-        const satEntity = viewer.entities.add({
-          position: new Cesium.CallbackProperty(() => {
-            const elapsed = (Date.now() - startTime) / 1000.0;
-            const currentAnomaly = (idx * 1.2) + (elapsed * obj.speed * 0.4);
-            return calculateOrbitalPosition(altMeters, incRad, obj.raan, currentAnomaly);
-          }, false),
-          point: {
-            pixelSize: obj.type === 'debris' ? 6 : 8,
-            color: baseColor,
-            outlineColor: Cesium.Color.WHITE.withAlpha(0.85),
-            outlineWidth: 1.5
+      // Connect to Live SGP4 Orbit Tracks from FastAPI Backend
+      if (typeof CosmixAPI !== 'undefined') {
+        CosmixAPI.getOrbitTracks({ hours: 3, stepMinutes: 3, limit: 30 }).then(res => {
+          if (res && res.satellites && res.satellites.length > 0) {
+            res.satellites.forEach((sat, sIdx) => {
+              if (!sat.track || !Array.isArray(sat.track) || sat.track.length < 2) return;
+              const coords = [];
+              sat.track.forEach(pt => {
+                if (pt && Number.isFinite(pt.longitude_deg) && Number.isFinite(pt.latitude_deg)) {
+                  const altKm = Number.isFinite(pt.altitude_km) ? pt.altitude_km : 500.0;
+                  const lon = Math.max(-180.0, Math.min(180.0, pt.longitude_deg));
+                  const lat = Math.max(-89.9, Math.min(89.9, pt.latitude_deg));
+                  const altM = Math.max(100000.0, altKm * 1000.0);
+                  const c3 = Cesium.Cartesian3.fromDegrees(lon, lat, altM);
+                  if (c3 && Number.isFinite(c3.x) && Number.isFinite(c3.y) && Number.isFinite(c3.z)) {
+                    coords.push(c3);
+                  }
+                }
+              });
+              if (coords.length < 2) return;
+              const trackEntity = viewer.entities.add({
+                polyline: {
+                  positions: coords,
+                  width: 1.5,
+                  material: new Cesium.ColorMaterialProperty(
+                    Cesium.Color.fromCssColorString(sIdx % 2 === 0 ? '#4fd1a5' : '#8fb4ff').withAlpha(0.35)
+                  )
+                }
+              });
+              orbitPathEntities.push(trackEntity);
+            });
           }
-        });
-
-        satEntity.userData = {
-          name: obj.name,
-          norad: obj.norad,
-          alt: obj.altKm + ' km',
-          vel: (7.6 - idx * 0.05).toFixed(2) + ' km/s',
-          status: obj.status,
-          orbit: obj.orbit,
-          type: obj.type
-        };
-
-        if (obj.type === 'debris') {
-          debrisEntities.push(satEntity);
-        } else {
-          satelliteEntities.push(satEntity);
-        }
-      });
+        }).catch(() => {});
+      }
 
       // 3. Additional Tracked Debris Particle Cloud
       const debrisCloudCount = 140;
@@ -1905,25 +2443,84 @@
         debrisEntities.push(debEntity);
       }
 
-      // 4. Conjunction / Close Approach Lines (ISS <-> Cosmos Debris)
-      if (satelliteEntities.length > 0 && debrisEntities.length > 0) {
-        const appLine = viewer.entities.add({
-          polyline: {
-            positions: new Cesium.CallbackProperty(() => {
-              const p1 = satelliteEntities[0].position.getValue(viewer.clock.currentTime);
-              const p2 = debrisEntities[0].position.getValue(viewer.clock.currentTime);
-              if (p1 && p2) return [p1, p2];
-              return [];
-            }, false),
-            width: 1.5,
-            material: new Cesium.PolylineDashMaterialProperty({
-              color: Cesium.Color.fromCssColorString('#e8b657'),
-              dashLength: 12.0
-            })
+      // 4. Conjunction / Close Approach Lines & Warning Markers
+      if (typeof CosmixAPI !== 'undefined') {
+        CosmixAPI.getConjunctions().then(conjunctions => {
+          if (Array.isArray(conjunctions) && conjunctions.length > 0) {
+            const countEl = document.getElementById('hud-close-encounters');
+            if (countEl) countEl.textContent = conjunctions.length;
+
+            conjunctions.forEach((c, cIdx) => {
+              const alt1 = (Number(c.sat1_alt_at_tca_km) || 450) * 1000.0;
+              const alt2 = (Number(c.sat1_alt_at_tca_km) ? Number(c.sat1_alt_at_tca_km) + (Number(c.miss_distance_km) || 4.0) : 480) * 1000.0;
+              const inc1 = Cesium.Math.toRadians(51.6 + (cIdx * 6));
+              const inc2 = Cesium.Math.toRadians(51.6 + (cIdx * 6) + 1.2);
+              const raan1 = (cIdx * 1.4);
+              const raan2 = (cIdx * 1.4) + 0.08;
+
+              // Conjunction Vector Line
+              const appLine = viewer.entities.add({
+                polyline: {
+                  positions: new Cesium.CallbackProperty(() => {
+                    const elapsed = (Date.now() - startTime) / 1000.0;
+                    const p1 = calculateOrbitalPosition(alt1, inc1, raan1, (elapsed * 0.035 * 0.35));
+                    const p2 = calculateOrbitalPosition(alt2, inc2, raan2, (elapsed * 0.035 * 0.35) + 0.02);
+                    return [p1, p2];
+                  }, false),
+                  width: 3.0,
+                  material: new Cesium.PolylineGlowMaterialProperty({
+                    glowPower: 0.4,
+                    color: Cesium.Color.fromCssColorString('#e8b657')
+                  })
+                }
+              });
+
+              // Conjunction Intersection Marker
+              const appMarker = viewer.entities.add({
+                position: new Cesium.CallbackProperty(() => {
+                  const elapsed = (Date.now() - startTime) / 1000.0;
+                  const p1 = calculateOrbitalPosition(alt1, inc1, raan1, (elapsed * 0.035 * 0.35));
+                  const p2 = calculateOrbitalPosition(alt2, inc2, raan2, (elapsed * 0.035 * 0.35) + 0.02);
+                  return Cesium.Cartesian3.midpoint(p1, p2, new Cesium.Cartesian3());
+                }, false),
+                point: {
+                  pixelSize: 8,
+                  color: Cesium.Color.fromCssColorString('#f59e0b'),
+                  outlineColor: Cesium.Color.WHITE,
+                  outlineWidth: 2
+                },
+                label: {
+                  text: `⚠️ ${c.sat1_name} ↔ ${c.sat2_name} (${c.miss_distance_km} km)`,
+                  font: '12px sans-serif',
+                  fillColor: Cesium.Color.fromCssColorString('#fef08a'),
+                  outlineColor: Cesium.Color.BLACK,
+                  outlineWidth: 2,
+                  style: Cesium.LabelStyle.FILL_AND_OUTLINE,
+                  verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
+                  pixelOffset: new Cesium.Cartesian2(0, -12),
+                  distanceDisplayCondition: new Cesium.DistanceDisplayCondition(1e5, 4.5e7)
+                }
+              });
+
+              appLine.userData = {
+                name: `${c.sat1_name} ↔ ${c.sat2_name}`,
+                norad: `${c.sat1_id} / ${c.sat2_id}`,
+                alt: `${c.miss_distance_km} km separation`,
+                vel: `${c.relative_velocity_km_s || 11.2} km/s`,
+                status: `RISK: ${(c.risk_level || 'EVALUATED').toUpperCase()}`,
+                orbit: 'Screened Conjunction',
+                type: 'debris'
+              };
+              appMarker.userData = appLine.userData;
+
+              // Initially visible if toggle state is active, otherwise false
+              appLine.show = !!window._showApproaches;
+              appMarker.show = !!window._showApproaches;
+
+              approachEntities.push(appLine, appMarker);
+            });
           }
-        });
-        appLine.show = false;
-        approachEntities.push(appLine);
+        }).catch(e => console.warn('Cesium close approaches sync notice:', e));
       }
     }
 
@@ -1989,8 +2586,12 @@
       // Map Layer Toggles
       let showSats = true;
       let showDebris = true;
-      let showApproaches = false;
+      let showApproaches = true; // Enabled by default so users see close encounters immediately
       let showOrbits = true;
+      window._showApproaches = true;
+
+      const appBtn = document.getElementById('toggle-approaches');
+      if (appBtn) appBtn.classList.add('active');
 
       document.getElementById('toggle-satellites').addEventListener('click', function () {
         showSats = !showSats;
@@ -2006,6 +2607,7 @@
 
       document.getElementById('toggle-approaches').addEventListener('click', function () {
         showApproaches = !showApproaches;
+        window._showApproaches = showApproaches;
         this.classList.toggle('active', showApproaches);
         approachEntities.forEach(ent => ent.show = showApproaches);
       });

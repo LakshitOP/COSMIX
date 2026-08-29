@@ -1,0 +1,12 @@
+{
+  "dependencies": {
+    "@react-three/drei": "^10.7.8",
+    "@react-three/fiber": "^9.7.0",
+    "cesium": "^1.144.0",
+    "resium": "^1.25.0",
+    "three": "^0.185.1"
+  },
+  "devDependencies": {
+    "vite-plugin-cesium": "^1.2.23"
+  }
+}
