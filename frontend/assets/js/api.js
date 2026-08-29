@@ -693,6 +693,54 @@
     },
 
     /**
+     * Synchronize logged-in user avatar and session across pages
+     */
+    syncUserSessionUI() {
+      if (typeof document === 'undefined') return;
+      const avatars = document.querySelectorAll('.avatar, #nav-avatar');
+      if (!avatars.length) return;
+
+      let user = null;
+      try {
+        const raw = localStorage.getItem('cosmix_user');
+        if (raw) user = JSON.parse(raw);
+      } catch (e) {}
+
+      avatars.forEach(av => {
+        if (av.classList.contains('pcard-avatar') || av.classList.contains('result-avatar')) return;
+
+        if (user) {
+          av.classList.add('logged-in');
+          const name = user.displayName || user.email || 'Operator';
+          const initials = (name.trim().split(/\s+/).map(p => p[0]).join('').slice(0, 2) || 'OP').toUpperCase();
+          if (user.photoURL) {
+            av.innerHTML = `<img src="${user.photoURL}" alt="${name}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;" onerror="this.parentElement.textContent='${initials}'">`;
+          } else {
+            av.textContent = initials;
+          }
+          av.setAttribute('title', `${name} (${user.email || ''}) — Click to view profile`);
+        } else {
+          av.classList.remove('logged-in');
+          if (av.id === 'nav-avatar') {
+            av.textContent = '?';
+            av.setAttribute('title', 'Sign In to Orbital');
+          }
+        }
+
+        // On non-home pages, clicking avatar navigates to HOME
+        if (av.id === 'nav-avatar' && !window.location.pathname.toLowerCase().includes('/home/')) {
+          if (!av._homeListenerAdded) {
+            av._homeListenerAdded = true;
+            av.style.cursor = 'pointer';
+            av.addEventListener('click', () => {
+              window.location.href = '../HOME/index.html';
+            });
+          }
+        }
+      });
+    },
+
+    /**
      * Connect to live SGP4 1Hz Telemetry WebSocket
      */
     connectTelemetry(onMessage, onError) {
@@ -767,13 +815,28 @@
     window.dispatchEvent(new CustomEvent('cosmix:notifications-changed', { detail: { allRead: true } }));
   }
 
-  // Auto-synchronize notifications when DOM is ready
+  // Auto-synchronize notifications and user session when DOM is ready
   if (typeof document !== 'undefined') {
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', () => CosmixAPI.syncNotificationsUI());
-    } else {
+    const initSync = () => {
       CosmixAPI.syncNotificationsUI();
+      CosmixAPI.syncUserSessionUI();
+    };
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initSync);
+    } else {
+      initSync();
     }
+
+    window.addEventListener('storage', (e) => {
+      if (e.key === 'cosmix_user') {
+        CosmixAPI.syncUserSessionUI();
+      }
+    });
+
+    window.addEventListener('cosmix:auth-changed', () => {
+      CosmixAPI.syncUserSessionUI();
+    });
   }
 
   return CosmixAPI;

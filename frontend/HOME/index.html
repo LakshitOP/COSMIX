@@ -215,12 +215,110 @@
 
 
             <!-- User avatar -->
-            <div
-                class="avatar"
-                id="nav-avatar"
-            >
-                ?
+            <div class="user-menu-wrapper" id="user-menu-wrapper">
+
+                <button
+                    type="button"
+                    class="avatar"
+                    id="nav-avatar"
+                    aria-haspopup="true"
+                    aria-expanded="false"
+                    aria-label="Account menu"
+                >?</button>
+
+                <div class="user-profile-dropdown" id="user-profile-dropdown" aria-hidden="true">
+
+                    <div class="profile-dropdown-header">
+
+                        <div
+                            class="profile-avatar-interactive"
+                            id="profile-flyout-avatar-wrapper"
+                            tabindex="0"
+                            role="button"
+                            aria-label="Change profile photo"
+                            title="Change profile photo"
+                        >
+                            <div class="profile-avatar-large" id="profile-flyout-avatar">OP</div>
+                            <div class="avatar-camera-overlay">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                                    <circle cx="12" cy="13" r="4"/>
+                                </svg>
+                            </div>
+                        </div>
+
+                        <div class="profile-details">
+                            <div class="profile-name-row">
+                                <h4 id="profile-flyout-name">Orbital Operator</h4>
+                                <span class="profile-status-dot" title="Online"></span>
+                            </div>
+                            <div class="profile-email" id="profile-flyout-email">operator@orbital.space</div>
+                            <div class="profile-badge-row">
+                                <span class="profile-role-badge" id="profile-flyout-role">✦ Verified Operator</span>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="profile-menu-links">
+
+                        <button type="button" class="profile-menu-link" id="menu-btn-edit-profile">
+                            <span class="pml-icon">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                                </svg>
+                            </span>
+                            <span class="pml-text">Edit Profile</span>
+                            <span class="pml-arrow">›</span>
+                        </button>
+
+                        <button type="button" class="profile-menu-link" id="menu-btn-tracking-location">
+                            <span class="pml-icon">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                                    <circle cx="12" cy="10" r="3"/>
+                                </svg>
+                            </span>
+                            <span class="pml-text">Ground Station</span>
+                            <span class="pml-badge" id="menu-location-badge">Cape Canaveral</span>
+                        </button>
+
+                        <button type="button" class="profile-menu-link" id="menu-btn-settings">
+                            <span class="pml-icon">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="12" r="3"/>
+                                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                                </svg>
+                            </span>
+                            <span class="pml-text">Preferences</span>
+                            <span class="pml-arrow">›</span>
+                        </button>
+
+                    </div>
+
+                    <div class="profile-dropdown-footer">
+                        <button type="button" class="btn-signout" id="nav-signout-btn">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                                <polyline points="16 17 21 12 16 7"/>
+                                <line x1="21" y1="12" x2="9" y2="12"/>
+                            </svg>
+                            Sign Out
+                        </button>
+                    </div>
+
+                </div>
+
             </div>
+
+            <!-- Hidden file input used by both avatar upload triggers -->
+            <input
+                type="file"
+                id="avatar-file-input"
+                accept="image/jpeg,image/png,image/webp,image/gif"
+                hidden
+            >
 
         </div>
 
@@ -1042,413 +1140,467 @@
          AUTHENTICATION MODAL
     ========================================================== -->
 
-    <div
-        class="auth-overlay"
-        id="auth-overlay"
-        aria-hidden="true"
-    >
+<div class="auth-overlay" id="auth-overlay" aria-hidden="true">
 
-        <div
-            class="auth-panel"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="auth-title"
-        >
+    <div class="auth-panel" role="dialog" aria-modal="true" aria-labelledby="auth-title">
 
+        <div class="auth-head">
+            <div>
+                <div class="brand"><span class="mark">✦</span> ORBITAL</div>
+                <h3 id="auth-title">Welcome to Orbital</h3>
+                <p id="auth-subtitle">Sign in to access live tracking and saved satellite watchlists.</p>
+            </div>
+            <button type="button" class="auth-close" id="auth-close" aria-label="Close sign-in dialog">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M18 6L6 18"/><path d="M6 6l12 12"/>
+                </svg>
+            </button>
+        </div>
 
-            <!-- AUTH HEADER -->
+        <div class="auth-tabs" id="auth-tabs">
+            <button type="button" class="auth-tab-btn active" id="tab-btn-signin">Sign In</button>
+            <button type="button" class="auth-tab-btn" id="tab-btn-signup">Create Account</button>
+        </div>
 
-            <div class="auth-head">
+        <div class="auth-status" id="auth-status" role="status" aria-live="polite"></div>
 
-                <div>
+        <!-- ============ SIGN IN VIEW ============ -->
+        <div class="auth-view active" id="auth-view-signin">
 
-                    <div class="brand">
-
-                        <span class="mark">
-                            ✦
-                        </span>
-
-                        ORBITAL
-
-                    </div>
-
-
-                    <h3 id="auth-title">
-                        Create your account
-                    </h3>
-
-
-                    <p>
-                        Join to save a watchlist
-                        and get close-approach alerts.
-                    </p>
-
-                </div>
-
-
-                <button
-                    type="button"
-                    class="auth-close"
-                    id="auth-close"
-                    aria-label="Close sign-up dialog"
-                >
-
-                    <svg
-                        width="14"
-                        height="14"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="2"
-                    >
-                        <path d="M18 6L6 18" />
-                        <path d="M6 6l12 12" />
+            <div class="social-row">
+                <button type="button" class="btn-social" id="google-auth-btn">
+                    <svg width="17" height="17" viewBox="0 0 48 48">
+                        <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.9 32.7 29.4 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.6 6.1 29.6 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.2-.1-2.4-.4-3.5z"/>
+                        <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 15.6 18.9 13 24 13c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.6 7.1 29.6 5 24 5c-7.6 0-14.2 4.3-17.7 10.7z"/>
+                        <path fill="#4CAF50" d="M24 44c5.5 0 10.4-2.1 14.1-5.6l-6.5-5.5C29.6 34.7 26.9 35.6 24 35.6c-5.4 0-9.9-3.6-11.5-8.5l-6.6 5.1C9.7 39.6 16.3 44 24 44z"/>
+                        <path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.9 2.6-2.6 4.8-4.8 6.3l6.5 5.5C40.9 36.6 44 30.9 44 24c0-1.2-.1-2.4-.4-3.5z"/>
                     </svg>
-
+                    <span>Continue with Google</span>
                 </button>
 
+                <button type="button" class="btn-social" id="github-auth-btn">
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 .5C5.73.5.98 5.24.98 11.52c0 5.02 3.26 9.28 7.79 10.78.57.1.78-.25.78-.55 0-.27-.01-1.16-.02-2.11-3.17.69-3.84-1.35-3.84-1.35-.52-1.32-1.27-1.67-1.27-1.67-1.04-.71.08-.7.08-.7 1.15.08 1.75 1.18 1.75 1.18 1.02 1.75 2.68 1.24 3.33.95.1-.74.4-1.24.72-1.53-2.53-.29-5.19-1.27-5.19-5.63 0-1.24.44-2.26 1.17-3.05-.12-.29-.51-1.46.11-3.04 0 0 .96-.31 3.15 1.16a10.9 10.9 0 0 1 2.87-.39c.97.01 1.95.13 2.87.39 2.19-1.47 3.15-1.16 3.15-1.16.62 1.58.23 2.75.11 3.04.73.79 1.17 1.81 1.17 3.05 0 4.37-2.67 5.33-5.21 5.62.41.36.77 1.06.77 2.14 0 1.55-.01 2.79-.01 3.17 0 .3.2.66.79.55A11.03 11.03 0 0 0 23.02 11.5C23.02 5.24 18.27.5 12 .5z"/>
+                    </svg>
+                    <span>Continue with GitHub</span>
+                </button>
             </div>
 
+            <div class="auth-divider">OR</div>
 
+            <form class="auth-form" id="signin-form" novalidate>
 
-            <!-- =================================================
-                 AUTH BODY
-            ================================================== -->
-
-            <div id="auth-body">
-
-
-                <!-- SOCIAL LOGIN -->
-
-                <div class="social-row">
-
-
-                    <!-- GOOGLE -->
-
-                    <button
-                        type="button"
-                        class="btn-social"
-                        id="google-auth-btn"
-                    >
-
-                        <svg
-                            width="17"
-                            height="17"
-                            viewBox="0 0 48 48"
-                        >
-
-                            <path
-                                fill="#FFC107"
-                                d="M43.6 20.5H42V20H24v8h11.3C33.9 32.7 29.4 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.6 6.1 29.6 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.2-.1-2.4-.4-3.5z"
-                            />
-
-                            <path
-                                fill="#FF3D00"
-                                d="M6.3 14.7l6.6 4.8C14.6 15.6 18.9 13 24 13c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.6 7.1 29.6 5 24 5c-7.6 0-14.2 4.3-17.7 10.7z"
-                            />
-
-                            <path
-                                fill="#4CAF50"
-                                d="M24 44c5.5 0 10.4-2.1 14.1-5.6l-6.5-5.5C29.6 34.7 26.9 35.6 24 35.6c-5.4 0-9.9-3.6-11.5-8.5l-6.6 5.1C9.7 39.6 16.3 44 24 44z"
-                            />
-
-                            <path
-                                fill="#1976D2"
-                                d="M43.6 20.5H42V20H24v8h11.3c-.9 2.6-2.6 4.8-4.8 6.3l6.5 5.5C40.9 36.6 44 30.9 44 24c0-1.2-.1-2.4-.4-3.5z"
-                            />
-
-                        </svg>
-
-
-                        <span>
-                            Continue with Google
-                        </span>
-
-                    </button>
-
-
-
-                    <!-- GITHUB -->
-
-                    <button
-                        type="button"
-                        class="btn-social"
-                        id="github-auth-btn"
-                    >
-
-                        <svg
-                            width="17"
-                            height="17"
-                            viewBox="0 0 24 24"
-                            fill="currentColor"
-                        >
-
-                            <path
-                                d="M12 .5C5.73.5.98 5.24.98 11.52c0 5.02 3.26 9.28 7.79 10.78.57.1.78-.25.78-.55 0-.27-.01-1.16-.02-2.11-3.17.69-3.84-1.35-3.84-1.35-.52-1.32-1.27-1.67-1.27-1.67-1.04-.71.08-.7.08-.7 1.15.08 1.75 1.18 1.75 1.18 1.02 1.75 2.68 1.24 3.33.95.1-.74.4-1.24.72-1.53-2.53-.29-5.19-1.27-5.19-5.63 0-1.24.44-2.26 1.17-3.05-.12-.29-.51-1.46.11-3.04 0 0 .96-.31 3.15 1.16a10.9 10.9 0 0 1 2.87-.39c.97.01 1.95.13 2.87.39 2.19-1.47 3.15-1.16 3.15-1.16.62 1.58.23 2.75.11 3.04.73.79 1.17 1.81 1.17 3.05 0 4.37-2.67 5.33-5.21 5.62.41.36.77 1.06.77 2.14 0 1.55-.01 2.79-.01 3.17 0 .3.2.66.79.55A11.03 11.03 0 0 0 23.02 11.5C23.02 5.24 18.27.5 12 .5z"
-                            />
-
-                        </svg>
-
-
-                        <span>
-                            Continue with GitHub
-                        </span>
-
-                    </button>
-
+                <div class="field">
+                    <label for="signin-email">Email <span class="req">*</span></label>
+                    <input type="email" id="signin-email" autocomplete="email" placeholder="you@example.com" required>
                 </div>
 
-
-
-                <!-- DIVIDER -->
-
-                <div class="auth-divider">
-                    OR
+                <div class="field">
+                    <div class="field-label-row">
+                        <label for="signin-password">Password <span class="req">*</span></label>
+                        <button type="button" class="btn-text-link" id="btn-to-forgot-pw">Forgot password?</button>
+                    </div>
+                    <div class="password-input-wrapper">
+                        <input type="password" id="signin-password" autocomplete="current-password" placeholder="••••••••" required>
+                        <button type="button" class="btn-pw-toggle" id="signin-pw-toggle" aria-label="Show password">
+                            <svg class="icon-eye" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+                            </svg>
+                            <svg class="icon-eye-off" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none;">
+                                <path d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-7 0-11-8-11-8a18.6 18.6 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>
+                            </svg>
+                        </button>
+                    </div>
                 </div>
 
+                <button type="submit" class="btn-primary auth-submit" id="signin-submit-btn">
+                    Sign In
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M5 12h14"/><path d="M13 5l7 7-7 7"/>
+                    </svg>
+                </button>
+            </form>
 
-                <div
-                    class="auth-status"
-                    id="auth-status"
-                    role="status"
-                    aria-live="polite"
-                ></div>
+            <div class="auth-alt-row">
+                <button type="button" class="btn-alt-link" id="btn-to-magic-link">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+                    </svg>
+                    Use a passwordless magic link instead
+                </button>
+            </div>
 
+        </div>
 
-                <!-- =================================================
-                     EMAIL LOGIN
-                ================================================== -->
+        <!-- ============ SIGN UP VIEW ============ -->
+        <div class="auth-view" id="auth-view-signup">
 
-                <form
-                    class="auth-form"
-                    id="signup-form"
-                    novalidate
-                >
+            <div class="social-row">
+                <button type="button" class="btn-social" id="google-signup-btn">
+                    <svg width="17" height="17" viewBox="0 0 48 48">
+                        <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.9 32.7 29.4 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.6 6.1 29.6 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.2-.1-2.4-.4-3.5z"/>
+                        <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 15.6 18.9 13 24 13c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.6 7.1 29.6 5 24 5c-7.6 0-14.2 4.3-17.7 10.7z"/>
+                        <path fill="#4CAF50" d="M24 44c5.5 0 10.4-2.1 14.1-5.6l-6.5-5.5C29.6 34.7 26.9 35.6 24 35.6c-5.4 0-9.9-3.6-11.5-8.5l-6.6 5.1C9.7 39.6 16.3 44 24 44z"/>
+                        <path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.9 2.6-2.6 4.8-4.8 6.3l6.5 5.5C40.9 36.6 44 30.9 44 24c0-1.2-.1-2.4-.4-3.5z"/>
+                    </svg>
+                    <span>Continue with Google</span>
+                </button>
 
-                    <h4 class="auth-form-title">
-                        Continue with Email
-                    </h4>
+                <button type="button" class="btn-social" id="github-signup-btn">
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 .5C5.73.5.98 5.24.98 11.52c0 5.02 3.26 9.28 7.79 10.78.57.1.78-.25.78-.55 0-.27-.01-1.16-.02-2.11-3.17.69-3.84-1.35-3.84-1.35-.52-1.32-1.27-1.67-1.27-1.67-1.04-.71.08-.7.08-.7 1.15.08 1.75 1.18 1.75 1.18 1.02 1.75 2.68 1.24 3.33.95.1-.74.4-1.24.72-1.53-2.53-.29-5.19-1.27-5.19-5.63 0-1.24.44-2.26 1.17-3.05-.12-.29-.51-1.46.11-3.04 0 0 .96-.31 3.15 1.16a10.9 10.9 0 0 1 2.87-.39c.97.01 1.95.13 2.87.39 2.19-1.47 3.15-1.16 3.15-1.16.62 1.58.23 2.75.11 3.04.73.79 1.17 1.81 1.17 3.05 0 4.37-2.67 5.33-5.21 5.62.41.36.77 1.06.77 2.14 0 1.55-.01 2.79-.01 3.17 0 .3.2.66.79.55A11.03 11.03 0 0 0 23.02 11.5C23.02 5.24 18.27.5 12 .5z"/>
+                    </svg>
+                    <span>Continue with GitHub</span>
+                </button>
+            </div>
 
+            <div class="auth-divider">OR</div>
 
-                    <!-- FULL NAME -->
+            <form class="auth-form" id="signup-form" novalidate>
 
+                <div class="field">
+                    <label for="signup-fullname">Full name <span class="req">*</span></label>
+                    <input type="text" id="signup-fullname" autocomplete="name" placeholder="Jamie Sato" required>
+                </div>
+
+                <div class="field-row">
                     <div class="field">
-
-                        <label for="full-name">
-                            Full name
-                            <span class="req">*</span>
-                        </label>
-
-                        <input
-                            type="text"
-                            id="full-name"
-                            name="fullName"
-                            placeholder="Jamie Sato"
-                            autocomplete="name"
-                            required
-                        />
-
+                        <label for="signup-username">Username <span class="req">*</span></label>
+                        <input type="text" id="signup-username" autocomplete="username" placeholder="jamiesato" required minlength="3" maxlength="20" pattern="[A-Za-z0-9_.]{3,20}">
                     </div>
-
-
-                    <!-- EMAIL -->
-
                     <div class="field">
-
-                        <label for="email">
-                            Email
-                            <span class="req">*</span>
-                        </label>
-
-                        <input
-                            type="email"
-                            id="email"
-                            name="email"
-                            placeholder="user@example.com"
-                            autocomplete="email"
-                            required
-                        />
-
+                        <label for="signup-role">Role</label>
+                        <select id="signup-role">
+                            <option value="Orbital Analyst" selected>Orbital Analyst</option>
+                            <option value="Mission Controller">Mission Controller</option>
+                            <option value="Researcher">Researcher</option>
+                            <option value="Space Enthusiast">Space Enthusiast</option>
+                        </select>
                     </div>
+                </div>
 
+                <div class="field">
+                    <label for="signup-email">Email <span class="req">*</span></label>
+                    <input type="email" id="signup-email" autocomplete="email" placeholder="you@example.com" required>
+                </div>
 
-
-                    <!-- USERNAME -->
-
-                    <div class="field">
-
-                        <label for="username">
-                            Username
-                            <span class="req">*</span>
-                        </label>
-
-                        <input
-                            type="text"
-                            id="username"
-                            name="username"
-                            placeholder="jamiesato"
-                            autocomplete="username"
-                            required
-                            minlength="3"
-                            maxlength="20"
-                            pattern="[A-Za-z0-9_.]{3,20}"
-                        />
-
-                        <span class="field-hint">
-                            3–20 characters, letters,
-                            numbers, underscores or dots.
-                        </span>
-
+                <div class="field">
+                    <label for="signup-password">Password <span class="req">*</span></label>
+                    <div class="password-input-wrapper">
+                        <input type="password" id="signup-password" autocomplete="new-password" placeholder="At least 6 characters" required minlength="6">
+                        <button type="button" class="btn-pw-toggle" id="signup-pw-toggle" aria-label="Show password">
+                            <svg class="icon-eye" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+                            </svg>
+                            <svg class="icon-eye-off" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none;">
+                                <path d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-7 0-11-8-11-8a18.6 18.6 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>
+                            </svg>
+                        </button>
                     </div>
-
-
-
-                    <!-- GENDER -->
-
-                    <div class="field-row">
-
-
-                        <div class="field">
-
-                            <label for="gender">
-                                Gender
-                                <span class="req">*</span>
-                            </label>
-
-                            <select
-                                id="gender"
-                                name="gender"
-                                required
-                            >
-
-                                <option
-                                    value=""
-                                    disabled
-                                    selected
-                                >
-                                    Select
-                                </option>
-
-                                <option value="female">
-                                    Female
-                                </option>
-
-                                <option value="male">
-                                    Male
-                                </option>
-
-                                <option value="non-binary">
-                                    Non-binary
-                                </option>
-
-                                <option value="prefer-not-to-say">
-                                    Prefer not to say
-                                </option>
-
-                            </select>
-
-                        </div>
-
+                    <div class="pw-strength-meter">
+                        <div class="pw-bar" id="pw-bar"></div>
+                        <span class="pw-strength-text" id="pw-strength-text">Password strength</span>
                     </div>
+                </div>
 
+                <div class="field-check">
+                    <input type="checkbox" id="signup-agree" required>
+                    <label for="signup-agree">
+                        I agree to the
+                        <a href="#" onclick="event.preventDefault()">Terms of Service</a>
+                        and
+                        <a href="#" onclick="event.preventDefault()">Privacy Policy</a>.
+                    </label>
+                </div>
 
-                    <!-- TERMS -->
+                <button type="submit" class="btn-primary auth-submit" id="signup-submit-btn">
+                    Create Account
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M5 12h14"/><path d="M13 5l7 7-7 7"/>
+                    </svg>
+                </button>
+            </form>
 
-                    <div class="field-check">
+        </div>
 
-                        <input
-                            type="checkbox"
-                            id="agree-terms"
-                            name="agreeTerms"
-                            required
-                        />
+        <!-- ============ FORGOT PASSWORD VIEW ============ -->
+        <div class="auth-view" id="auth-view-forgot">
 
+            <p class="auth-view-desc">
+                Enter the email on your account and we'll send secure instructions to reset your password.
+            </p>
 
-                        <label for="agree-terms">
+            <form class="auth-form" id="forgot-form" novalidate>
+                <div class="field">
+                    <label for="forgot-email">Email <span class="req">*</span></label>
+                    <input type="email" id="forgot-email" autocomplete="email" placeholder="you@example.com" required>
+                </div>
+                <button type="submit" class="btn-primary auth-submit" id="forgot-submit-btn">
+                    Send Reset Link
+                </button>
+            </form>
 
-                            I agree to the
+            <div class="auth-alt-row">
+                <button type="button" class="btn-alt-link" id="btn-back-to-signin-from-forgot">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/>
+                    </svg>
+                    Back to sign in
+                </button>
+            </div>
 
-                            <a
-                                href="#"
-                                onclick="event.preventDefault()"
-                            >
-                                Terms of Service
-                            </a>
+        </div>
 
-                            and
+        <!-- ============ MAGIC LINK VIEW ============ -->
+        <div class="auth-view" id="auth-view-magic">
 
-                            <a
-                                href="#"
-                                onclick="event.preventDefault()"
-                            >
-                                Privacy Policy
-                            </a>.
+            <p class="auth-view-desc">
+                We'll email you a secure sign-in link — no password required. Click it on this device to finish signing in.
+            </p>
 
-                        </label>
+            <form class="auth-form" id="magic-form" novalidate>
+                <div class="field">
+                    <label for="magic-email">Email <span class="req">*</span></label>
+                    <input type="email" id="magic-email" autocomplete="email" placeholder="you@example.com" required>
+                </div>
+                <button type="submit" class="btn-primary auth-submit" id="magic-submit-btn">
+                    Send Magic Link
+                </button>
+            </form>
 
-                    </div>
-
-
-
-                    <!-- SUBMIT -->
-
-                    <button
-                        type="submit"
-                        class="btn-primary auth-submit"
-                        id="auth-submit-btn"
-                    >
-
-                        Send login link
-
-                        <svg
-                            width="14"
-                            height="14"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="2"
-                        >
-
-                            <path d="M5 12h14" />
-
-                            <path
-                                d="M13 5l7 7-7 7"
-                            />
-
-                        </svg>
-
-                    </button>
-
-
-                    <p class="auth-note">
-                        We will email you a secure Firebase
-                        sign-in link. No password required.
-                    </p>
-
-                </form>
-
-
-
-                <!-- SIGN IN -->
-
-                <p class="auth-switch">
-
-                    Already have an account?
-
-                    <button
-                        type="button"
-                        id="auth-signin-link"
-                    >
-                        Sign in
-                    </button>
-
-                </p>
-
+            <div class="auth-alt-row">
+                <button type="button" class="btn-alt-link" id="btn-back-to-signin-from-magic">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/>
+                    </svg>
+                    Back to sign in
+                </button>
             </div>
 
         </div>
 
     </div>
+
+</div>
+
+
+<!-- ============================================================
+     PASTE 3 — three new modals. Place right after the
+     #auth-overlay block, before the JS <script> tags.
+============================================================ -->
+
+<!-- EDIT PROFILE MODAL -->
+<div class="app-modal-overlay" id="edit-profile-modal" aria-hidden="true">
+    <div class="app-modal-panel">
+
+        <div class="app-modal-head">
+            <div>
+                <h3>Edit Profile</h3>
+                <p>Update how your operator identity appears across Orbital.</p>
+            </div>
+            <button type="button" class="app-modal-close" id="edit-profile-close" aria-label="Close">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M18 6L6 18"/><path d="M6 6l12 12"/>
+                </svg>
+            </button>
+        </div>
+
+        <div class="edit-avatar-section">
+            <div
+                class="edit-avatar-preview-wrapper"
+                id="edit-avatar-preview-wrapper"
+                tabindex="0"
+                role="button"
+                aria-label="Change profile photo"
+            >
+                <div class="edit-avatar-preview" id="edit-avatar-preview">OP</div>
+                <div class="edit-avatar-overlay">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                        <circle cx="12" cy="13" r="4"/>
+                    </svg>
+                    <span>Change</span>
+                </div>
+            </div>
+            <div class="edit-avatar-info">
+                <h5>Profile Photo</h5>
+                <p>JPG, PNG, WEBP or GIF. Max size 5MB.</p>
+                <button type="button" class="btn-secondary-sm" id="btn-trigger-avatar-upload">Upload New Photo</button>
+            </div>
+        </div>
+
+        <form id="edit-profile-form" novalidate>
+            <div class="field">
+                <label for="edit-fullname">Full name</label>
+                <input type="text" id="edit-fullname" required>
+            </div>
+            <div class="field-row">
+                <div class="field">
+                    <label for="edit-username">Username</label>
+                    <input type="text" id="edit-username" required minlength="3" maxlength="20" pattern="[A-Za-z0-9_.]{3,20}">
+                </div>
+                <div class="field">
+                    <label for="edit-role">Role</label>
+                    <select id="edit-role">
+                        <option>Orbital Analyst</option>
+                        <option>Mission Controller</option>
+                        <option>Researcher</option>
+                        <option>Space Enthusiast</option>
+                    </select>
+                </div>
+            </div>
+            <div class="field">
+                <label for="edit-email">Email</label>
+                <input type="email" id="edit-email" disabled>
+            </div>
+
+            <div class="app-modal-actions">
+                <button type="button" class="btn-ghost" id="edit-profile-cancel">Cancel</button>
+                <button type="submit" class="btn-primary" id="edit-profile-save">Save Changes</button>
+            </div>
+        </form>
+
+    </div>
+</div>
+
+
+<!-- TRACKING LOCATION MODAL -->
+<div class="app-modal-overlay" id="tracking-location-modal" aria-hidden="true">
+    <div class="app-modal-panel">
+
+        <div class="app-modal-head">
+            <div>
+                <h3>Ground Station</h3>
+                <p>Set the location used to compute local visibility and pass predictions.</p>
+            </div>
+            <button type="button" class="app-modal-close" id="tracking-location-close" aria-label="Close">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M18 6L6 18"/><path d="M6 6l12 12"/>
+                </svg>
+            </button>
+        </div>
+
+        <div class="current-location-card">
+            <div class="clc-icon">📍</div>
+            <div class="clc-body">
+                <span class="clc-label">Current Station</span>
+                <h4 id="clc-station-name">Cape Canaveral, USA</h4>
+                <span class="clc-coords" id="clc-coords-display">28.3922° N, 80.6077° W · 3m Elevation</span>
+            </div>
+        </div>
+
+        <button type="button" class="btn-gps-detect" id="btn-gps-detect">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/>
+                <line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/>
+                <line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/>
+            </svg>
+            <span id="gps-btn-text">Detect My Current GPS Location</span>
+        </button>
+
+        <div class="auth-divider">OR CHOOSE MANUALLY</div>
+
+        <form id="tracking-location-form" novalidate>
+            <div class="field">
+                <label for="station-preset-select">Preset Station</label>
+                <select id="station-preset-select">
+                    <option value="custom">Custom location</option>
+                    <option value="cape-canaveral">Cape Canaveral, USA</option>
+                    <option value="kourou">Kourou Space Centre, French Guiana</option>
+                    <option value="sriharikota">Satish Dhawan Space Centre, India</option>
+                    <option value="svalbard">Svalbard Satellite Station, Norway</option>
+                    <option value="tanegashima">Tanegashima Space Center, Japan</option>
+                    <option value="woomera">Woomera Range Complex, Australia</option>
+                    <option value="london">London / Greenwich Observatory, UK</option>
+                </select>
+            </div>
+            <div class="field">
+                <label for="station-name-input">Station Name</label>
+                <input type="text" id="station-name-input" placeholder="My Ground Station">
+            </div>
+            <div class="field-row">
+                <div class="field">
+                    <label for="station-lat-input">Latitude</label>
+                    <input type="number" id="station-lat-input" step="0.0001" min="-90" max="90" placeholder="28.3922">
+                </div>
+                <div class="field">
+                    <label for="station-lon-input">Longitude</label>
+                    <input type="number" id="station-lon-input" step="0.0001" min="-180" max="180" placeholder="-80.6077">
+                </div>
+            </div>
+
+            <div class="app-modal-actions">
+                <button type="button" class="btn-ghost" id="tracking-location-cancel">Cancel</button>
+                <button type="submit" class="btn-primary" id="tracking-location-save">Save Station</button>
+            </div>
+        </form>
+
+    </div>
+</div>
+
+
+<!-- SETTINGS MODAL -->
+<div class="app-modal-overlay" id="settings-modal" aria-hidden="true">
+    <div class="app-modal-panel">
+
+        <div class="app-modal-head">
+            <div>
+                <h3>Orbital Preferences</h3>
+                <p>Tune telemetry cadence, units, and alert sensitivity.</p>
+            </div>
+            <button type="button" class="app-modal-close" id="settings-modal-close" aria-label="Close">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M18 6L6 18"/><path d="M6 6l12 12"/>
+                </svg>
+            </button>
+        </div>
+
+        <form id="settings-form" novalidate>
+
+            <div class="setting-item">
+                <div class="setting-info">
+                    <label for="setting-telemetry-rate">Telemetry Refresh Rate</label>
+                    <p>How often live object positions are recalculated.</p>
+                </div>
+                <select class="setting-select" id="setting-telemetry-rate">
+                    <option value="250">250 ms — Fastest</option>
+                    <option value="1000" selected>1 second — Balanced</option>
+                    <option value="5000">5 seconds — Efficient</option>
+                </select>
+            </div>
+
+            <div class="setting-item">
+                <div class="setting-info">
+                    <label for="setting-distance-units">Distance Units</label>
+                    <p>Used across altitude, range, and miss-distance readouts.</p>
+                </div>
+                <select class="setting-select" id="setting-distance-units">
+                    <option value="km" selected>Kilometers</option>
+                    <option value="mi">Miles</option>
+                </select>
+            </div>
+
+            <div class="setting-item">
+                <div class="setting-info">
+                    <label for="setting-conjunction-threshold">Conjunction Alert Threshold</label>
+                    <p>Minimum predicted miss distance that triggers an alert.</p>
+                </div>
+                <select class="setting-select" id="setting-conjunction-threshold">
+                    <option value="5">5 km</option>
+                    <option value="10">10 km</option>
+                    <option value="30" selected>30 km</option>
+                    <option value="50">50 km</option>
+                </select>
+            </div>
+
+            <div class="app-modal-actions">
+                <button type="button" class="btn-ghost" id="settings-cancel">Cancel</button>
+                <button type="submit" class="btn-primary" id="settings-modal-save">Save Preferences</button>
+            </div>
+        </form>
+
+    </div>
+</div>
 
 
 
@@ -1481,47 +1633,6 @@
       if (typeof CosmixAPI !== 'undefined') {
         CosmixAPI.syncNotificationsUI().catch(() => {});
       }
-    </script>
-
-    <!-- Auth Modal Init Script -->
-    <script>
-      (function initAuthModal() {
-        const overlay = document.getElementById('auth-overlay');
-        const trigger = document.getElementById('hero-signup-trigger');
-        const closeBtn = document.getElementById('auth-close');
-        const navAvatar = document.getElementById('nav-avatar');
-
-        function openModal() {
-          if (!overlay) return;
-          overlay.classList.add('open', 'show');
-          overlay.setAttribute('aria-hidden', 'false');
-          document.body.style.overflow = 'hidden';
-        }
-
-        function closeModal() {
-          if (!overlay) return;
-          overlay.classList.remove('open', 'show');
-          overlay.setAttribute('aria-hidden', 'true');
-          document.body.style.overflow = '';
-        }
-
-        window.openAuthModal = openModal;
-        window.closeAuthModal = closeModal;
-
-        if (trigger) trigger.addEventListener('click', openModal);
-        if (navAvatar) navAvatar.addEventListener('click', openModal);
-        if (closeBtn) closeBtn.addEventListener('click', closeModal);
-        if (overlay) {
-          overlay.addEventListener('click', (e) => {
-            if (e.target === overlay) closeModal();
-          });
-        }
-        document.addEventListener('keydown', (e) => {
-          if (e.key === 'Escape' && overlay && (overlay.classList.contains('open') || overlay.classList.contains('show'))) {
-            closeModal();
-          }
-        });
-      })();
     </script>
 
 
