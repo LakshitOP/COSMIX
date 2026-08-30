@@ -14,15 +14,18 @@
 })(typeof self !== 'undefined' ? self : this, function () {
   'use strict';
 
-  // Base URL resolution: use local backend during local development,
-  // and Azure for deployed static frontends.
+  // Base URL resolution: prefer the current origin when the frontend is served
+  // from the same host or a proxied deployment, while still allowing an explicit
+  // override for Azure/other backends.
   const PRODUCTION_API_BASE =
     'https://cosmix-backend-lakshit.azurewebsites.net';
 
   const DEFAULT_API_BASE = (() => {
     if (typeof window === 'undefined') return PRODUCTION_API_BASE;
 
-    if (window.COSMIX_API_URL) return window.COSMIX_API_URL;
+    if (window.COSMIX_API_URL) {
+      return String(window.COSMIX_API_URL).replace(/\/+$/, '');
+    }
 
     const host = window.location.hostname;
 
@@ -31,6 +34,15 @@
     }
 
     if (window.location.port === '8000') {
+      return window.location.origin;
+    }
+
+    if (
+      host.endsWith('.azurewebsites.net') ||
+      host.endsWith('.vercel.app') ||
+      host === 'cosmix.me' ||
+      host === 'www.cosmix.me'
+    ) {
       return window.location.origin;
     }
 
@@ -387,6 +399,13 @@
 
     } catch (err) {
       clearTimeout(timer);
+
+      // If the backend is temporarily offline, keep the UI resilient instead of
+      // spamming the console with duplicate abort noise.
+      if (err && err.name === 'AbortError') {
+        console.warn('[CosmixAPI] Request timed out or was aborted:', endpoint);
+      }
+
       throw err;
     }
   }

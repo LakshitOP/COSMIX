@@ -41,12 +41,20 @@ CATALOG_REFRESH_INTERVAL_S: int = int(
 )
 
 # Which CelesTrak groups to load on startup and during auto-refresh.
-# Includes active satellites, space stations, visual/bright objects,
-# recent 30-day launches, and authentic space debris clouds.
+# Azure App Service is memory-constrained, so a smaller default startup catalog
+# avoids worker OOM kills during boot while still keeping a usable live dataset.
 _DEFAULT_GROUPS = "active,stations,visual,last-30-days,fengyun-1c-debris,iridium-33-debris,cosmos-2251-debris"
+_DEFAULT_AZURE_STARTUP_GROUPS = "active,stations"
+
+azure_startup = os.environ.get("WEBSITE_SITE_NAME") or os.environ.get("WEBSITE_INSTANCE_ID")
+if azure_startup:
+    startup_groups = _DEFAULT_AZURE_STARTUP_GROUPS
+else:
+    startup_groups = _DEFAULT_GROUPS
+
 CELESTRAK_GROUPS: list[str] = [
     g.strip()
-    for g in os.environ.get("CELESTRAK_GROUPS", _DEFAULT_GROUPS).split(",")
+    for g in os.environ.get("CELESTRAK_GROUPS", startup_groups).split(",")
     if g.strip()
 ]
 
@@ -143,18 +151,21 @@ async def lifespan(application: FastAPI):
     except Exception as exc:
         print(f"[INIT] ⚠  Could not fetch initial catalog: {exc}")
 
-    # 4. Auto-run initial conjunction scan so the bus is populated on first load
-    async def _initial_conjunction_scan() -> None:
-        """Run one conjunction scan shortly after startup so the bus is never empty."""
-        await asyncio.sleep(5)  # Give catalog state a moment to settle
-        try:
-            from app.api.routes import run_conjunction_scan  # noqa: PLC0415
-            alerts = await asyncio.to_thread(run_conjunction_scan)
-            print(f"[INIT] ✓ Auto-scan complete: {len(alerts)} conjunction alert(s) stored.")
-        except Exception as exc:
-            print(f"[INIT] ⚠  Auto-scan notice: {exc}")
+    # 4. Auto-run initial conjunction scan so the bus is populated on first load.
+    # Keep this disabled by default on Azure to avoid worker timeouts/OOMs during boot.
+    enable_startup_scan = os.environ.get("COSMIX_ENABLE_STARTUP_SCAN", "false").lower() in {"1", "true", "yes", "on"}
+    if enable_startup_scan:
+        async def _initial_conjunction_scan() -> None:
+            """Run one conjunction scan shortly after startup so the bus is never empty."""
+            await asyncio.sleep(5)  # Give catalog state a moment to settle
+            try:
+                from app.api.routes import run_conjunction_scan  # noqa: PLC0415
+                alerts = await asyncio.to_thread(run_conjunction_scan)
+                print(f"[INIT] ✓ Auto-scan complete: {len(alerts)} conjunction alert(s) stored.")
+            except Exception as exc:
+                print(f"[INIT] ⚠  Auto-scan notice: {exc}")
 
-    asyncio.create_task(_initial_conjunction_scan(), name="initial-conjunction-scan")
+        asyncio.create_task(_initial_conjunction_scan(), name="initial-conjunction-scan")
 
     # 5. Launch background auto-refresh task
     refresh_task = asyncio.create_task(
