@@ -46,3 +46,6 @@ backend/logs/*.log
 # OS
 .DS_Store
 Thumbs.db
+
+# Allow the production model artifact
+!backend/app/models/risk_xgboost_v1.pkl
