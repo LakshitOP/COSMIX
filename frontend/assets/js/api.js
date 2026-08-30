@@ -48,6 +48,54 @@
   const _API_CACHE = new Map();
   const CACHE_TTL_MS = 20000;
   const USER_STORAGE_KEY = 'cosmix_user';
+  const BACKEND_OFFLINE_COOLDOWN_MS = 30000;
+  const BACKEND_OFFLINE_STATE = {
+    enabledUntil: 0,
+    lastWarningAt: 0,
+    consecutiveTimeouts: 0
+  };
+
+  function applyBackendOfflineState(endpoint, err) {
+    const now = Date.now();
+    const isAbortOrNetworkFailure = !!(
+      err && (
+        err.name === 'AbortError' ||
+        err.message === 'Failed to fetch' ||
+        /timeout|aborted|network/i.test(String(err.message || ''))
+      )
+    );
+
+    if (!isAbortOrNetworkFailure) {
+      BACKEND_OFFLINE_STATE.consecutiveTimeouts = 0;
+      return false;
+    }
+
+    BACKEND_OFFLINE_STATE.consecutiveTimeouts += 1;
+    BACKEND_OFFLINE_STATE.enabledUntil = Math.max(
+      BACKEND_OFFLINE_STATE.enabledUntil,
+      now + BACKEND_OFFLINE_COOLDOWN_MS
+    );
+
+    if (now - BACKEND_OFFLINE_STATE.lastWarningAt > 15000) {
+      BACKEND_OFFLINE_STATE.lastWarningAt = now;
+      console.warn('[CosmixAPI] Backend appears offline; entering short request cooldown:', endpoint);
+    }
+
+    return true;
+  }
+
+  function shouldSkipRequestDuringCooldown(endpoint) {
+    if (Date.now() < BACKEND_OFFLINE_STATE.enabledUntil) {
+      return true;
+    }
+
+    if (BACKEND_OFFLINE_STATE.consecutiveTimeouts >= 3) {
+      BACKEND_OFFLINE_STATE.enabledUntil = Date.now() + BACKEND_OFFLINE_COOLDOWN_MS;
+      return true;
+    }
+
+    return false;
+  }
 
   function isAuthenticated() {
     try {
@@ -337,6 +385,10 @@
       !options.method ||
       options.method.toUpperCase() === 'GET';
 
+    if (shouldSkipRequestDuringCooldown(endpoint)) {
+      throw new Error('BACKEND_OFFLINE_COOLDOWN');
+    }
+
     const cacheKey = endpoint;
 
     if (isGet && _API_CACHE.has(cacheKey)) {
@@ -393,11 +445,9 @@
     } catch (err) {
       clearTimeout(timer);
 
-      // If the backend is temporarily offline, keep the UI resilient instead of
-      // spamming the console with duplicate abort noise.
-      if (err && err.name === 'AbortError') {
-        console.warn('[CosmixAPI] Request timed out or was aborted:', endpoint);
-      }
+      const backendOffline = applyBackendOfflineState(endpoint, err);
+
+      // Keep the UI resilient without logging every request in an outage.
 
       throw err;
     }
@@ -629,13 +679,7 @@
           return data.results;
         }
 
-      } catch (err) {
-
-        console.warn(
-          '[CosmixAPI] Catalog backend unavailable:',
-          err
-        );
-      }
+      } catch (err) {}
 
       // -----------------------------------------------------------------------
       // IMPORTANT:

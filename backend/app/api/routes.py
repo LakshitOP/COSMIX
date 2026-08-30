@@ -365,13 +365,9 @@ def get_recent_conjunctions(
     if not isinstance(group, str):
         group = None
 
-    alerts = list_recent_conjunction_alerts(limit=limit, catalog_group=group, future_only=True)
-    if not alerts:
-        try:
-            alerts = run_conjunction_scan(max_candidates=50, miss_distance_cutoff_km=25.0, hours=24.0)
-        except Exception:
-            alerts = []
-    return alerts
+    # Keep reads cheap and predictable. Scanning is CPU-heavy and is exposed
+    # separately through /conjunctions/scan so page loads cannot launch scans.
+    return list_recent_conjunction_alerts(limit=limit, catalog_group=group, future_only=True)
 
 
 # In-memory scan cache to avoid redundant re-computations on repeated clicks
