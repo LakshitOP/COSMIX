@@ -1561,18 +1561,8 @@
       });
     });
 
-    // Check URL parameters and hash on load
-    (function handleInitialTab() {
-      try {
-        const params = new URLSearchParams(window.location.search);
-        const urlTab = params.get('tab');
-        const hashTab = window.location.hash.replace('#', '');
-        const targetTab = urlTab || hashTab;
-        if (targetTab && typeof window.activateTab === 'function') {
-          window.activateTab(targetTab);
-        }
-      } catch (e) {}
-    })();
+    // URL-tab bootstrap is intentionally performed after all page
+    // functions/state have been initialized.
 
     /* ---- Filter Pills Generic Active Handler ---- */
     document.querySelectorAll('.filters-row').forEach(row => {
@@ -2073,11 +2063,33 @@
       });
     });
 
-    // Auto-bootstrap live satellite & debris data
+// Auto-bootstrap live satellite & debris data
+// Run only after the entire explore script has initialized.
+window.addEventListener('load', () => {
+  try {
     updateSearchDatabase();
+  } catch (e) {
+    console.warn('Search database initialization failed:', e);
+  }
+
+  try {
     loadRecentlyViewed();
+  } catch (e) {
+    console.warn('Recently viewed initialization failed:', e);
+  }
+
+  try {
     loadLiveSatellites();
+  } catch (e) {
+    console.warn('Satellite initialization failed:', e);
+  }
+
+  try {
     loadLiveDebris();
+  } catch (e) {
+    console.warn('Debris initialization failed:', e);
+  }
+});
 
     /* ============================================================
        CESIUM ION ORBITAL MAP SCENE
