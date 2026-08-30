@@ -44,6 +44,40 @@ class Base(DeclarativeBase):
     pass
 
 
+def _build_engine(url: str) -> Engine:
+    """Create a SQLAlchemy engine for the given URL and bind the session factory."""
+    connect_args: dict = {}
+    if url.startswith("sqlite"):
+        # SQLite requires check_same_thread=False when the same connection
+        # is used from multiple threads (FastAPI / Uvicorn thread pool).
+        connect_args["check_same_thread"] = False
+
+    engine = create_engine(
+        url,
+        pool_pre_ping=True,
+        connect_args=connect_args,
+    )
+    SessionLocal.configure(bind=engine)
+    return engine
+
+
+def _fallback_to_sqlite(reason: Exception) -> None:
+    """Replace an unreachable production DB with the local SQLite file."""
+    global DATABASE_URL, _engine
+
+    if DATABASE_URL == _DEFAULT_SQLITE_URL:
+        return
+
+    print(
+        f"[DB] Primary database unavailable ({reason}). "
+        f"Falling back to SQLite at { _DEFAULT_SQLITE_PATH }."
+    )
+    DATABASE_URL = _DEFAULT_SQLITE_URL
+    if _engine is not None:
+        _engine.dispose()
+    _engine = _build_engine(DATABASE_URL)
+
+
 # ---------------------------------------------------------------------------
 # SQLite Performance Optimization Event Listeners
 # ---------------------------------------------------------------------------
@@ -73,19 +107,16 @@ def get_engine() -> Engine:
     """Return the singleton engine, creating and binding it on first call."""
     global _engine
     if _engine is None:
-        _connect_args: dict = {}
+        _engine = _build_engine(DATABASE_URL)
 
-        if DATABASE_URL.startswith("sqlite"):
-            # SQLite requires check_same_thread=False when the same connection
-            # is used from multiple threads (FastAPI / Uvicorn thread pool).
-            _connect_args["check_same_thread"] = False
+    try:
+        with _engine.connect() as connection:
+            connection.execute(text("SELECT 1"))
+    except Exception as exc:
+        if DATABASE_URL == _DEFAULT_SQLITE_URL:
+            raise
+        _fallback_to_sqlite(exc)
 
-        _engine = create_engine(
-            DATABASE_URL,
-            pool_pre_ping=True,
-            connect_args=_connect_args,
-        )
-        SessionLocal.configure(bind=_engine)
     return _engine
 
 

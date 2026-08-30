@@ -55,6 +55,8 @@ class DatabasePartitioningTest(unittest.TestCase):
         initialize_database()
 
     def tearDown(self):
+        if database._engine is not None:
+            database._engine.dispose()
         database._engine = None
         self.url_patcher.stop()
         self.temp_dir.cleanup()
@@ -196,6 +198,21 @@ class DatabasePartitioningTest(unittest.TestCase):
         debris_only = list_recent_conjunction_alerts(10, catalog_group="fengyun-1c-debris")
         self.assertEqual(len(debris_only), 1)
         self.assertEqual(debris_only[0].sat1_name, "DEBRIS-1")
+
+    def test_initialize_database_falls_back_to_sqlite_when_postgres_is_unreachable(self):
+        """Startup should continue with a local SQLite database if the configured Postgres DB is unavailable."""
+        original_url = database.DATABASE_URL
+        original_engine = database._engine
+
+        try:
+            database._engine = None
+            database.DATABASE_URL = "postgresql://invalid-host.invalid:5432/space_debris"
+            initialize_database()
+            self.assertTrue(database.DATABASE_URL.startswith("sqlite"))
+            self.assertIsNotNone(get_engine())
+        finally:
+            database._engine = original_engine
+            database.DATABASE_URL = original_url
 
 
 if __name__ == "__main__":
