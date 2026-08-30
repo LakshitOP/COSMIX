@@ -25,14 +25,26 @@ from sqlalchemy.orm import DeclarativeBase, sessionmaker
 _DEFAULT_SQLITE_PATH = Path(__file__).resolve().parent.parent / "space_debris.db"
 _DEFAULT_SQLITE_URL = f"sqlite:///{_DEFAULT_SQLITE_PATH}"
 
-_raw_url: str = os.environ.get("DATABASE_URL", _DEFAULT_SQLITE_URL)
+_raw_url: str = os.environ.get("DATABASE_URL", "").strip()
 
-# Render provides 'postgres://' but SQLAlchemy 2.x requires 'postgresql+psycopg2://'
-if _raw_url.startswith("postgres://"):
-    _raw_url = _raw_url.replace("postgres://", "postgresql+psycopg2://", 1)
+if not _raw_url:
+    DATABASE_URL = _DEFAULT_SQLITE_URL
+else:
+    # Normalize Render / PostgreSQL URLs for psycopg 3.
+    if _raw_url.startswith("postgres://"):
+        _raw_url = _raw_url.replace(
+            "postgres://",
+            "postgresql+psycopg://",
+            1,
+        )
+    elif _raw_url.startswith("postgresql://"):
+        _raw_url = _raw_url.replace(
+            "postgresql://",
+            "postgresql+psycopg://",
+            1,
+        )
 
-DATABASE_URL: str = _raw_url
-
+    DATABASE_URL = _raw_url
 # ---------------------------------------------------------------------------
 # Engine singleton & session factory
 # ---------------------------------------------------------------------------
@@ -61,7 +73,7 @@ def _build_engine(url: str) -> Engine:
     return engine
 
 
-def _fallback_to_sqlite(reason: Exception) -> None:
+
     """Replace an unreachable production DB with the local SQLite file."""
     global DATABASE_URL, _engine
 
@@ -104,8 +116,9 @@ def _set_sqlite_pragmas(dbapi_connection, connection_record):
 # ---------------------------------------------------------------------------
 
 def get_engine() -> Engine:
-    """Return the singleton engine, creating and binding it on first call."""
+    """Return the singleton database engine."""
     global _engine
+
     if _engine is None:
         _engine = _build_engine(DATABASE_URL)
 
@@ -113,9 +126,19 @@ def get_engine() -> Engine:
         with _engine.connect() as connection:
             connection.execute(text("SELECT 1"))
     except Exception as exc:
+        # SQLite is allowed only for local development.
         if DATABASE_URL == _DEFAULT_SQLITE_URL:
             raise
-        _fallback_to_sqlite(exc)
+
+        # Production PostgreSQL failure should NOT silently
+        # fall back to SQLite.
+        print(
+            f"[DB] PostgreSQL connection failed: {exc}"
+        )
+        raise RuntimeError(
+            "Production PostgreSQL database is unavailable. "
+            "Check DATABASE_URL and the Render PostgreSQL service."
+        ) from exc
 
     return _engine
 
