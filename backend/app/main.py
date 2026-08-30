@@ -7,7 +7,7 @@ Startup:
   4. Launches a background auto-refresh task that re-fetches TLEs every 2 h.
 
 Endpoints:
-  REST API         → /api/...
+  REST API          → /api/...
   WebSocket stream → /ws/stream
 """
 
@@ -26,6 +26,8 @@ if str(_BACKEND_DIR) not in sys.path:
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse, RedirectResponse
+from fastapi.staticfiles import StaticFiles
 
 from app.api.routes import router as api_router
 from app.api.websockets import router as ws_router
@@ -61,7 +63,11 @@ async def _auto_refresh_catalog() -> None:
     and pulls fresh orbital element sets directly from CelesTrak, pushing the
     updated SGP4 coordinates through the real-time WebSocket telemetry stream.
     """
-    from app.data.fetch_tles import fetch_active_catalog, fetch_multiple_groups, build_celestrak_url
+    from app.data.fetch_tles import (
+        build_celestrak_url,
+        fetch_active_catalog,
+        fetch_multiple_groups,
+    )
     from app.state import get_catalog_meta, set_catalog
 
     while True:
@@ -123,8 +129,8 @@ async def lifespan(application: FastAPI):
     # 3. Initial CelesTrak fetch (runs in thread pool to keep startup non-blocking)
     print(f"[INIT] Fetching initial TLE catalog from CelesTrak (groups: {', '.join(CELESTRAK_GROUPS)})...")
     try:
-        from app.data.fetch_tles import fetch_multiple_groups, build_celestrak_url
-        from app.state import set_catalog, get_catalog_meta
+        from app.data.fetch_tles import build_celestrak_url, fetch_multiple_groups
+        from app.state import get_catalog_meta, set_catalog
 
         catalog = await asyncio.to_thread(fetch_multiple_groups, CELESTRAK_GROUPS)
         if catalog:
@@ -162,7 +168,7 @@ async def lifespan(application: FastAPI):
 
     yield  # ── Application serves requests here ──
 
-    # 5. Shutdown: cancel the background task cleanly
+    # 6. Shutdown: cancel the background task cleanly
     refresh_task.cancel()
     try:
         await refresh_task
@@ -182,30 +188,23 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-_FRONTEND_ORIGIN = os.environ.get("FRONTEND_ORIGIN", "https://pritls.vercel.app")
-_ALLOWED_ORIGINS = [
-    _FRONTEND_ORIGIN,
-    "https://pritls.vercel.app",
+# ---------------------------------------------------------------------------
+# CORS Configuration
+# ---------------------------------------------------------------------------
+
+origins = [
     "http://localhost:3000",
-    "http://127.0.0.1:3000",
-    "http://localhost:8000",
-    "http://127.0.0.1:8000",
-    "http://localhost:5173",
-    "http://127.0.0.1:5173",
-    "null",
+    "https://cosmix-uy6f.vercel.app",
+    "https://cosmix.me",
 ]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=_ALLOWED_ORIGINS,
-    allow_origin_regex=r"^https?://(localhost|127\.0\.0\.1|0\.0\.0\.0)(:[0-9]+)?$",
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-from fastapi.responses import FileResponse, RedirectResponse
-from fastapi.staticfiles import StaticFiles
 
 _PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 _FRONTEND_DIR = _PROJECT_ROOT / "frontend"
@@ -223,4 +222,3 @@ def root():
 
 if _FRONTEND_DIR.exists():
     app.mount("/", StaticFiles(directory=str(_FRONTEND_DIR), html=True), name="frontend")
-
