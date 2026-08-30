@@ -14,10 +14,17 @@
 })(typeof self !== 'undefined' ? self : this, function () {
   'use strict';
 
-  // Base URL resolution: default to localhost:8000 for local development,
-  // or window.location.origin if served from the backend.
-  const DEFAULT_API_BASE =
-    (typeof window !== 'undefined' && (window.COSMIX_API_URL || (window.location.port === '8000' ? window.location.origin : 'http://localhost:8000')));
+  // Base URL resolution: use local backend during local development, the current
+  // origin when served by FastAPI, and Azure for deployed static frontends.
+  const PRODUCTION_API_BASE = 'https://cosmix-backend-lakshit.azurewebsites.net';
+  const DEFAULT_API_BASE = (() => {
+    if (typeof window === 'undefined') return PRODUCTION_API_BASE;
+    if (window.COSMIX_API_URL) return window.COSMIX_API_URL;
+    const host = window.location.hostname;
+    if (host === 'localhost' || host === '127.0.0.1') return 'http://localhost:8000';
+    if (window.location.port === '8000') return window.location.origin;
+    return PRODUCTION_API_BASE;
+  })().replace(/\/+$/, '');
 
   const DEFAULT_WS_BASE = DEFAULT_API_BASE.replace(/^http/, 'ws');
 
