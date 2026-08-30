@@ -22,8 +22,8 @@ _BACKEND_ROOT = os.path.join(_PROJECT_ROOT, "backend")
 if _BACKEND_ROOT not in sys.path:
     sys.path.insert(0, _BACKEND_ROOT)
 
-from app.api.routes import health_check                          # noqa: E402
-from app.services.risk_scorer import calculate_conjunction_risk  # noqa: E402
+from backend.app.api.routes import health_check                          # noqa: E402
+from backend.app.services.risk_scorer import calculate_conjunction_risk  # noqa: E402
 
 
 class RiskScorerIntegrationTest(unittest.TestCase):
@@ -42,7 +42,7 @@ class RiskScorerIntegrationTest(unittest.TestCase):
         This verifies the graceful degradation path for production deployments
         where the pkl may not be committed (e.g. git-ignored in early builds).
         """
-        from app.services.risk_scorer import is_model_loaded  # noqa: PLC0415
+        from backend.app.services.risk_scorer import is_model_loaded  # noqa: PLC0415
 
         # is_model_loaded() always returns True regardless of pkl presence
         self.assertTrue(is_model_loaded())
@@ -76,7 +76,7 @@ class RiskScorerIntegrationTest(unittest.TestCase):
 
     def test_catalog_status_structure(self):
         """catalog/status endpoint must return the expected metadata fields."""
-        from app.api.routes import catalog_status  # noqa: PLC0415
+        from backend.app.api.routes import catalog_status  # noqa: PLC0415
 
         result = catalog_status()
 
@@ -88,7 +88,7 @@ class RiskScorerIntegrationTest(unittest.TestCase):
 
     def test_fetch_tles_supported_groups_not_empty(self):
         """SUPPORTED_GROUPS registry must expose at least the core groups."""
-        from app.data.fetch_tles import SUPPORTED_GROUPS  # noqa: PLC0415
+        from backend.app.data.fetch_tles import SUPPORTED_GROUPS  # noqa: PLC0415
 
         self.assertIn("stations", SUPPORTED_GROUPS)
         self.assertIn("active", SUPPORTED_GROUPS)
