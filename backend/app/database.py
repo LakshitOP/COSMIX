@@ -73,8 +73,8 @@ def _build_engine(url: str) -> Engine:
     return engine
 
 
-
-    """Replace an unreachable production DB with the local SQLite file."""
+def _fallback_to_sqlite(reason: Exception) -> None:
+    """Replace an unreachable production database with the local SQLite file."""
     global DATABASE_URL, _engine
 
     if DATABASE_URL == _DEFAULT_SQLITE_URL:
@@ -82,12 +82,13 @@ def _build_engine(url: str) -> Engine:
 
     print(
         f"[DB] Primary database unavailable ({reason}). "
-        f"Falling back to SQLite at { _DEFAULT_SQLITE_PATH }."
+        f"Falling back to SQLite at {_DEFAULT_SQLITE_PATH}."
     )
-    DATABASE_URL = _DEFAULT_SQLITE_URL
     if _engine is not None:
         _engine.dispose()
+    DATABASE_URL = _DEFAULT_SQLITE_URL
     _engine = _build_engine(DATABASE_URL)
+
 
 
 # ---------------------------------------------------------------------------
@@ -126,19 +127,9 @@ def get_engine() -> Engine:
         with _engine.connect() as connection:
             connection.execute(text("SELECT 1"))
     except Exception as exc:
-        # SQLite is allowed only for local development.
         if DATABASE_URL == _DEFAULT_SQLITE_URL:
             raise
-
-        # Production PostgreSQL failure should NOT silently
-        # fall back to SQLite.
-        print(
-            f"[DB] PostgreSQL connection failed: {exc}"
-        )
-        raise RuntimeError(
-            "Production PostgreSQL database is unavailable. "
-            "Check DATABASE_URL and the Render PostgreSQL service."
-        ) from exc
+        _fallback_to_sqlite(exc)
 
     return _engine
 
