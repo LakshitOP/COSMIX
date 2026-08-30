@@ -10,18 +10,9 @@ _MODEL_ENV = os.environ.get("MODEL_PATH")
 if _MODEL_ENV:
     MODEL_PATH = Path(_MODEL_ENV)
 else:
-    # When running from: backend/  (Render rootDir=backend)
-    # → parents[3] = project root → ml_pipeline/models/risk_xgboost_v1.pkl
-    # When running from: project root (local uvicorn)
-    # → also resolves correctly via parents[3]
+    # Resolves directly to backend/app/models/risk_xgboost_v1.pkl
     _here = Path(__file__).resolve()
-    for _n in (3, 4):
-        _candidate = _here.parents[_n] / "ml_pipeline" / "models" / "risk_xgboost_v1.pkl"
-        if _candidate.exists():
-            MODEL_PATH = _candidate
-            break
-    else:
-        MODEL_PATH = _here.parents[3] / "ml_pipeline" / "models" / "risk_xgboost_v1.pkl"
+    MODEL_PATH = _here.parents[1] / "models" / "risk_xgboost_v1.pkl"
 
 try:
     risk_model = joblib.load(str(MODEL_PATH))
@@ -33,7 +24,7 @@ except Exception as e:
 
 def is_model_loaded() -> bool:
     """Return whether the trained ML artifact is available for scoring."""
-    return True  # Heuristic fallback always works — never block startup
+    return risk_model is not None
 
 
 def calculate_conjunction_risk(
