@@ -37,14 +37,7 @@
       return window.location.origin;
     }
 
-    if (
-      host.endsWith('.azurewebsites.net') ||
-      host.endsWith('.vercel.app') ||
-      host === 'cosmix.me' ||
-      host === 'www.cosmix.me'
-    ) {
-      return window.location.origin;
-    }
+    
 
     return PRODUCTION_API_BASE;
   })().replace(/\/+$/, '');
