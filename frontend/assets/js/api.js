@@ -16,9 +16,9 @@
 
   // Base URL resolution: prefer the current origin when the frontend is served
   // from the same host or a proxied deployment, while still allowing an explicit
-  // override for Azure/other backends.
+  // override for Render/other backends.
   const PRODUCTION_API_BASE =
-    'https://cosmix-backend-lakshit.azurewebsites.net';
+    'https://pritlis-backend-8ifn.onrender.com';
 
   const DEFAULT_API_BASE = (() => {
     if (typeof window === 'undefined') return PRODUCTION_API_BASE;
