@@ -1949,7 +1949,9 @@
             const count = conjunctions.length;
             const closest = conjunctions[0];
             const missDist = closest.miss_distance_km ? `${closest.miss_distance_km.toFixed(1)} km` : '< 5.0 km';
-            const pair = (closest.sat1_name && closest.sat2_name) ? `${closest.sat1_name} ↔ ${closest.sat2_name}` : 'active constellations';
+            const obj1 = closest.sat1_name || closest.primary_object || '';
+            const obj2 = closest.sat2_name || closest.secondary_object || '';
+            const pair = (obj1 && obj2) ? `${obj1} ↔ ${obj2}` : 'active constellations';
 
             headingEl.textContent = `${count} Conjunction Screening Warnings in Next 24 Hours`;
             descEl.textContent = `Propagated SGP4 orbits indicate close approach thresholds (${missDist} miss distance: ${pair}). Automated screening updates every 90 minutes.`;
@@ -2422,7 +2424,7 @@ window.addEventListener('load', () => {
                   outlineWidth: 2
                 },
                 label: {
-                  text: `⚠️ ${c.sat1_name} ↔ ${c.sat2_name} (${c.miss_distance_km} km)`,
+                  text: `⚠️ ${c.sat1_name || c.primary_object || 'SAT-A'} ↔ ${c.sat2_name || c.secondary_object || 'SAT-B'} (${c.miss_distance_km} km)`,
                   font: '12px sans-serif',
                   fillColor: Cesium.Color.fromCssColorString('#fef08a'),
                   outlineColor: Cesium.Color.BLACK,

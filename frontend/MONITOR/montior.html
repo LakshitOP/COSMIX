@@ -1982,13 +1982,17 @@
   async function loadLiveMonitorData() {
     if (typeof CosmixAPI === 'undefined') return;
     try {
-      const [stats, conjunctions, recent] = await Promise.all([
+      const [statsResult, conjResult, recentResult] = await Promise.allSettled([
         CosmixAPI.getStats(),
         CosmixAPI.getConjunctions(),
         CosmixAPI.getRecentlyViewed()
       ]);
 
-      LIVE_CONJUNCTIONS = conjunctions || [];
+      const stats       = statsResult.status === 'fulfilled'  ? statsResult.value  : null;
+      const conjunctions = conjResult.status === 'fulfilled'  ? conjResult.value   : [];
+      const recent      = recentResult.status === 'fulfilled' ? recentResult.value : [];
+
+      LIVE_CONJUNCTIONS = Array.isArray(conjunctions) ? conjunctions : [];
       renderPriorityCards(LIVE_CONJUNCTIONS);
       renderConjunctionTable(LIVE_CONJUNCTIONS);
       renderWatchlistCards();

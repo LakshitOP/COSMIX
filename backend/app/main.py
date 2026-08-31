@@ -206,9 +206,25 @@ def health():
 # ---------------------------------------------------------------------------
 
 origins = [
+    # Local development — common ports used by VS Code Live Server, Vite, etc.
+    "http://localhost",
     "http://localhost:3000",
+    "http://localhost:4000",
+    "http://localhost:5000",
+    "http://localhost:5500",
+    "http://localhost:5501",
+    "http://localhost:8000",
+    "http://localhost:8080",
+    "http://127.0.0.1",
+    "http://127.0.0.1:3000",
+    "http://127.0.0.1:5500",
+    "http://127.0.0.1:5501",
+    "http://127.0.0.1:8000",
+    "http://127.0.0.1:8080",
+    # Production / staging
     "https://cosmix-uy6f.vercel.app",
     "https://cosmix.me",
+    "https://pritlis-backend-8ifn.onrender.com",
 ]
 
 app.add_middleware(
